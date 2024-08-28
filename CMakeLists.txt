@@ -13,5 +13,6 @@ option(TODO_TESTS   "Add the tests to the project" ON)
 add_subdirectory(Todo)
 
 if(TODO_TESTS)
+    include(CTest)
     add_subdirectory(Tests)
 endif()
