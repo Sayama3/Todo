@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(TODO_SRC
-    include/Todo/Thread.hpp
-    src/Thread.cpp
+		include/Todo/Thread.hpp
+		src/Thread.cpp
 )
 
 if(TODO_STATIC)
-    add_library(Todo STATIC)
+	add_library(Todo STATIC)
 else()
-    add_library(Todo SHARED)
+	add_library(Todo SHARED)
 endif()
 
 target_include_directories(Todo PUBLIC include)
