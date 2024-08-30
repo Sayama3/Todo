@@ -19,3 +19,5 @@ target_sources(Todo PRIVATE ${TODO_SRC})
 set_property(TARGET Todo PROPERTY CXX_STANDARD 20)
 set_property(TARGET Todo PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET Todo PROPERTY CMAKE_CXX_STANDARD_REQUIRED OFF)
+
+add_library(Todo::Todo ALIAS Todo)
