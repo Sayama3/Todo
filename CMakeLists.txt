@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(
 		TODO
-		VERSION 1.0
-		DESCRIPTION "A task/event scheduler/manager to create multithreaded application."
+		VERSION 1.0.0
+		DESCRIPTION "A Job System written in c++20 to create and manage multithreaded application."
 		LANGUAGES CXX
 )
 
