@@ -46,6 +46,6 @@ namespace Todo
 	void Destroy()
 	{
 		s_JobSystem.reset(nullptr);
-		Logger::Log(std::source_location::current(), Clock::now(), ::Todo::LogType::Info, std::format("Todo Destroy."));
+		TODO_INFO("Todo Destroy.");
 	}
 }

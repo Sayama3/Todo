@@ -19,5 +19,9 @@ set_target_properties(Finder PROPERTIES
 		CXX_STANDARD_REQUIRED ON
 )
 
+if(MSVC AND TODO_UNICODE)
+	target_compile_options(Finder PUBLIC $<$<COMPILE_LANGUAGE:CXX>:/utf-8>)
+endif()
+
 target_precompile_headers(Finder REUSE_FROM Todo)
 target_link_libraries(Finder PUBLIC Todo::Todo)

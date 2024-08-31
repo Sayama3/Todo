@@ -28,6 +28,10 @@ set_target_properties(Todo PROPERTIES
 		CXX_STANDARD_REQUIRED ON
 )
 
+if(MSVC AND TODO_UNICODE)
+	target_compile_options(Todo PUBLIC $<$<COMPILE_LANGUAGE:CXX>:/utf-8>)
+endif()
+
 # Custom properties of the library
 if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
 	target_compile_definitions(Todo PUBLIC TODO_DEBUG)
@@ -71,11 +75,7 @@ target_precompile_headers(Todo PUBLIC
 		<source_location>
 
 		# String & IO manipulation
-		<iostream>
-		<fstream>
-		<ostream>
 		<filesystem>
-		<format>
 		<string>
 		<string_view>
 
@@ -96,5 +96,29 @@ target_precompile_headers(Todo PUBLIC
 		<cstring>
 		<cmath>
 )
+
+if (TODO_LOG)
+	include(FetchContent)
+	FetchContent_Declare(
+			fmt
+			GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+			GIT_TAG        11.0.2
+	)
+
+	# Disabling all options as I only need the basics. (and compiling portability).
+	set(FMT_DOC				OFF) # "Generate the doc target."
+	set(FMT_INSTALL			OFF) # "Generate the install target."
+	set(FMT_TEST			OFF) # "Generate the test target."
+	set(FMT_FUZZ			OFF) # "Generate the fuzz target."
+	set(FMT_CUDA_TEST		OFF) # "Generate the cuda-test target."
+	set(FMT_OS				OFF) # "Include OS-specific APIs."
+	set(FMT_MODULE			OFF) # "Build a module instead of a traditional library."
+	set(FMT_SYSTEM_HEADERS	OFF) # "Expose headers with marking them as system."
+	set(FMT_UNICODE			${TODO_UNICODE}) # "Enable Unicode support."
+
+	FetchContent_MakeAvailable(fmt)
+	target_link_libraries(Todo PRIVATE fmt::fmt)
+	target_compile_definitions(Todo PRIVATE TODO_LOG)
+endif()
 
 add_library(Todo::Todo ALIAS Todo)

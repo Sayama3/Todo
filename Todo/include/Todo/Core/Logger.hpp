@@ -23,32 +23,39 @@ namespace Todo
 	{
 	public:
 		static void SetupLogger(LogFuncPtr logfunction);
-	public:
-		static void Log(std::source_location source, Clock::time_point timelog, LogType logType, std::string_view message);
+		static void ResetLogger() { SetupLogger(nullptr); }
+		static bool HasLogger();
+		static bool HasCustomLogger();
+		static void Log	(LogType logType, std::string_view message, std::source_location source = std::source_location::current(), Clock::time_point timelog = Clock::now());
+
+		static void Trace	(std::string_view message, 	std::source_location source = std::source_location::current(), Clock::time_point timelog = Clock::now()) { Log(LogType::Trace,		message, source, timelog); }
+		static void Info	(std::string_view message, 	std::source_location source = std::source_location::current(), Clock::time_point timelog = Clock::now()) { Log(LogType::Info,		message, source, timelog); }
+		static void Warning	(std::string_view message, 	std::source_location source = std::source_location::current(), Clock::time_point timelog = Clock::now()) { Log(LogType::Warning,	message, source, timelog); }
+		static void Error	(std::string_view message, 	std::source_location source = std::source_location::current(), Clock::time_point timelog = Clock::now()) { Log(LogType::Error,		message, source, timelog); }
 	};
 }
 
 #ifndef TODO_TRACE
-	#define TODO_TRACE(...)		Logger::Log(std::source_location::current(), Clock::now(), ::Todo::LogType::Trace, std::format(__VA_ARGS__))
+	#define TODO_TRACE(message)		Logger::Trace((message))
 #endif
 
 #ifndef TODO_INFO
-	#define TODO_INFO(...)		Logger::Log(std::source_location::current(), Clock::now(), ::Todo::LogType::Info, std::format(__VA_ARGS__))
+	#define TODO_INFO(message)		Logger::Info((message))
 #endif
 
 #ifndef TODO_WARNING
-	#define TODO_WARNING(...)	Logger::Log(std::source_location::current(), Clock::now(), ::Todo::LogType::Warning, std::format(__VA_ARGS__))
+	#define TODO_WARNING(message)	Logger::Warning((message))
 #endif
 
 #ifndef TODO_ERROR
-	#define TODO_ERROR(...)		Logger::Log(std::source_location::current(), Clock::now(), ::Todo::LogType::Error, std::format(__VA_ARGS__))
+	#define TODO_ERROR(message)		Logger::Error((message))
 #endif
 
 #ifndef TODO_ERR
-	#define TODO_ERR(...) TODO_ERROR(__VA_ARGS__)
+	#define TODO_ERR(message)		TODO_ERROR(message)
 #endif
 
 #ifndef TODO_ASSERT
 	#include <cassert>
-	#define TODO_ASSERT(condition,...) if(!(condition)) {TODO_ERROR(__VA_ARGS__); assert(condition);}
+	#define TODO_ASSERT(condition,message) if(!(condition)) {TODO_ERROR(message); assert(condition);}
 #endif
