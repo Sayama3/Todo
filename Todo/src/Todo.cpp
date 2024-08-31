@@ -27,7 +27,7 @@ namespace Todo
 #endif
 	}
 
-	void Todo::Initialize(uint32_t threadCount)
+	void Initialize(uint32_t threadCount)
 	{
 		if(s_JobSystem) {
 			TODO_ERROR("The Job System is already initialized. Replacing the old one with the new one.");
@@ -36,7 +36,7 @@ namespace Todo
 		TODO_INFO("Todo Initialized.");
 	}
 
-	void Todo::Initialize(std::unique_ptr<JobSystem> jobsystem) {
+	void Initialize(std::unique_ptr<JobSystem> jobsystem) {
 		if(s_JobSystem) {
 			TODO_ERROR("The Job System is already initialized. Replacing the old one with the new one.");
 		}
