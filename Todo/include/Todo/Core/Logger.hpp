@@ -35,24 +35,46 @@ namespace Todo
 	};
 }
 
-#ifndef TODO_TRACE
-	#define TODO_TRACE(message)		Logger::Trace((message))
-#endif
+#ifndef TODO_DISABLE_LOG
+	#ifndef TODO_TRACE
+		#define TODO_TRACE(message)		Logger::Trace((message))
+	#endif
 
-#ifndef TODO_INFO
-	#define TODO_INFO(message)		Logger::Info((message))
-#endif
+	#ifndef TODO_INFO
+		#define TODO_INFO(message)		Logger::Info((message))
+	#endif
 
-#ifndef TODO_WARNING
-	#define TODO_WARNING(message)	Logger::Warning((message))
-#endif
+	#ifndef TODO_WARNING
+		#define TODO_WARNING(message)	Logger::Warning((message))
+	#endif
 
-#ifndef TODO_ERROR
-	#define TODO_ERROR(message)		Logger::Error((message))
-#endif
+	#ifndef TODO_ERROR
+		#define TODO_ERROR(message)		Logger::Error((message))
+	#endif
 
-#ifndef TODO_ERR
-	#define TODO_ERR(message)		TODO_ERROR(message)
+	#ifndef TODO_ERR
+		#define TODO_ERR(message)		TODO_ERROR(message)
+	#endif
+#else
+	#ifndef TODO_TRACE
+		#define TODO_TRACE(message)
+	#endif
+
+	#ifndef TODO_INFO
+		#define TODO_INFO(message)
+	#endif
+
+	#ifndef TODO_WARNING
+		#define TODO_WARNING(message)
+	#endif
+
+	#ifndef TODO_ERROR
+		#define TODO_ERROR(message)
+	#endif
+
+	#ifndef TODO_ERR
+		#define TODO_ERR(message)
+	#endif
 #endif
 
 #ifndef TODO_ASSERT
