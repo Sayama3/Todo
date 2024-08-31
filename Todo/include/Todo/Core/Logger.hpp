@@ -8,14 +8,40 @@
 
 namespace Todo
 {
+	enum class LogType
+	{
+		Trace,
+		Info,
+		Warning,
+		Error,
+	};
+
+	using Clock = std::chrono::system_clock;
+	using LogFuncPtr = void (*/*variable_name*/)(std::source_location, Clock::time_point, LogType, std::string);
+
+	class Logger
+	{
+	public:
+		static void SetupLogger(LogFuncPtr logfunction);
+	public:
+		static void Log(std::source_location source, Clock::time_point timelog, LogType logType, std::string_view message);
+	};
 }
 
+#ifndef TODO_TRACE
+	#define TODO_TRACE(...)		Logger::Log(std::source_location::current(), Clock::now(), ::Todo::LogType::Trace, std::format(__VA_ARGS__))
+#endif
+
 #ifndef TODO_INFO
-	#define TODO_INFO(...) (std::cout << std::format(__VA_ARGS__) << std::endl)
+	#define TODO_INFO(...)		Logger::Log(std::source_location::current(), Clock::now(), ::Todo::LogType::Info, std::format(__VA_ARGS__))
+#endif
+
+#ifndef TODO_WARNING
+	#define TODO_WARNING(...)	Logger::Log(std::source_location::current(), Clock::now(), ::Todo::LogType::Warning, std::format(__VA_ARGS__))
 #endif
 
 #ifndef TODO_ERROR
-	#define TODO_ERROR(...) (std::cerr << std::format(__VA_ARGS__) << std::endl)
+	#define TODO_ERROR(...)		Logger::Log(std::source_location::current(), Clock::now(), ::Todo::LogType::Error, std::format(__VA_ARGS__))
 #endif
 
 #ifndef TODO_ERR

@@ -10,6 +10,7 @@ set(TODO_SRC
 		src/JobSystem.cpp
 		include/Todo/JobSystem/JobSystem.hpp
 		include/Todo/Core/Helper.hpp
+		src/Logger.cpp
 )
 
 if(TODO_STATIC)
@@ -67,6 +68,7 @@ target_precompile_headers(Todo PUBLIC
 		<utility>
 		<algorithm>
 		<memory>
+		<source_location>
 
 		# String & IO manipulation
 		<iostream>

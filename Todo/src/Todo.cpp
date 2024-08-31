@@ -33,6 +33,7 @@ namespace Todo
 			TODO_ERROR("The Job System is already initialized. Replacing the old one with the new one.");
 		}
 		s_JobSystem = std::make_unique<JobSystem>(threadCount);
+		TODO_INFO("Todo Initialized.");
 	}
 
 	void Todo::Initialize(std::unique_ptr<JobSystem> jobsystem) {
@@ -45,5 +46,6 @@ namespace Todo
 	void Destroy()
 	{
 		s_JobSystem.reset(nullptr);
+		Logger::Log(std::source_location::current(), Clock::now(), ::Todo::LogType::Info, std::format("Todo Destroy."));
 	}
 }
