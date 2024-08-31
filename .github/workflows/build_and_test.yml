@@ -17,6 +17,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         compiler: [llvm, gcc]
+        exclude: # Excluding llvm on MacOS until the <source_location> is present.
+          - os: macos-latest
+            compiler: llvm
         include:
           - os: windows-latest
             compiler: msvc
