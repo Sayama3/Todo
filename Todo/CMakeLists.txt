@@ -1,23 +1,98 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(TODO_SRC
-		include/Todo/Thread.hpp
+		include/Todo/Todo.hpp
+		include/Todo/Multithreading/Thread.hpp
 		src/Thread.cpp
+		include/Todo/Core/Macros.hpp
+		include/Todo/Core/Logger.hpp
+		src/Todo.cpp
+		src/JobSystem.cpp
+		include/Todo/JobSystem/JobSystem.hpp
+		include/Todo/Core/Helper.hpp
 )
 
 if(TODO_STATIC)
-	add_library(Todo STATIC)
+	add_library(Todo STATIC ${TODO_SRC})
 else()
-	add_library(Todo SHARED)
+	add_library(Todo SHARED ${TODO_SRC})
 endif()
 
 target_include_directories(Todo PUBLIC include)
 target_include_directories(Todo PRIVATE src)
 
-target_sources(Todo PRIVATE ${TODO_SRC})
+# C++ Properties of the library
+set_target_properties(Todo PROPERTIES
+		CXX_STANDARD 20
+		CXX_STANDARD_REQUIRED ON
+)
 
-set_property(TARGET Todo PROPERTY CXX_STANDARD 20)
-set_property(TARGET Todo PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET Todo PROPERTY CMAKE_CXX_STANDARD_REQUIRED OFF)
+# Custom properties of the library
+if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
+	target_compile_definitions(Todo PUBLIC TODO_DEBUG)
+elseif(CMAKE_BUILD_TYPE MATCHES "[Rr][Ee][Ll][Ee][Aa][Ss][Ee]")
+	target_compile_definitions(Todo PUBLIC TODO_RELEASE)
+elseif(CMAKE_BUILD_TYPE MATCHES "[Dd][Ii][Ss][Tt]")
+	target_compile_definitions(Todo PUBLIC TODO_DIST)
+else()
+	message(WARNING, "The build type ${CMAKE_BUILD_TYPE} is unknown. Falling back to Release mode.")
+	target_compile_definitions(Todo PUBLIC TODO_RELEASE)
+endif()
+
+if(TODO_USE_ALL_THREADS)
+	target_compile_definitions(Todo PUBLIC TODO_USE_ALL_THREADS)
+else()
+	if(TODO_MIN_THREAD_COUNT)
+		target_compile_definitions(Todo PUBLIC TODO_MIN_THREAD_COUNT=${TODO_MIN_THREAD_COUNT})
+	endif()
+endif()
+
+if(TODO_REMAINING_THREAD)
+	target_compile_definitions(Todo PUBLIC TODO_REMAINING_THREAD=${TODO_REMAINING_THREAD})
+endif()
+
+target_precompile_headers(Todo PUBLIC
+		# Multithreading headers
+		<thread>
+		<atomic>
+		<future>
+		<condition_variable>
+		<mutex>
+		<shared_mutex>
+		<latch>
+		<barrier>
+
+		# Utility stuff
+		<functional>
+		<utility>
+		<algorithm>
+		<memory>
+
+		# String & IO manipulation
+		<iostream>
+		<fstream>
+		<ostream>
+		<filesystem>
+		<format>
+		<string>
+		<string_view>
+
+		# Containers
+		<optional>
+		<tuple>
+		<variant>
+		<array>
+		<any>
+		<vector>
+		<map>
+		<unordered_map>
+		<set>
+		<unordered_set>
+
+		# C-Types Helpers
+		<cstdint>
+		<cstring>
+		<cmath>
+)
 
 add_library(Todo::Todo ALIAS Todo)

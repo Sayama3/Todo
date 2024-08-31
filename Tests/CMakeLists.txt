@@ -20,11 +20,17 @@ add_executable(
   src/tests_basics.cpp
   src/tests_threads.cpp
 )
-target_link_libraries(
-  test_todo
+
+# C++ Properties of the library
+set_target_properties(test_todo PROPERTIES
+		CXX_STANDARD 20
+		CXX_STANDARD_REQUIRED ON
+)
+
+target_precompile_headers(test_todo REUSE_FROM Todo)
+target_link_libraries(test_todo PUBLIC
   Todo
   GTest::gtest_main
 )
-
 include(GoogleTest)
 gtest_discover_tests(test_todo)
