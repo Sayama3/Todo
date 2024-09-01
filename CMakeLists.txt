@@ -8,8 +8,8 @@ project(
 )
 
 # Library options
-option(TODO_USE_ALL_THREADS		"Whether to use all the threads available or leave one for the rest of the systems" ON)
-option(TODO_REMAINING_THREAD	"The number of thread to leave to the system if possible" 1)
+option(TODO_USE_ALL_THREADS		"Whether to use all the threads available or leave one for the rest of the systems" OFF)
+option(TODO_REMAINING_THREAD	"The number of thread to leave to the system if possible" OFF)
 option(TODO_MIN_THREAD_COUNT	"The minimum number of thread to use in the Job System" 4)
 option(TODO_LOG					"Add a logger to the library." ON)
 option(TODO_DISABLE_LOG			"Disable entirely the logging system." OFF)

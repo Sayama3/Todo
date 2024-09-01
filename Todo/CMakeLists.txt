@@ -3,14 +3,28 @@ cmake_minimum_required(VERSION 3.16)
 set(TODO_SRC
 		include/Todo/Todo.hpp
 		include/Todo/Multithreading/Thread.hpp
-		src/Thread.cpp
+		src/Multithreading/Thread.cpp
 		include/Todo/Core/Macros.hpp
 		include/Todo/Core/Logger.hpp
 		src/Todo.cpp
-		src/JobSystem.cpp
+		src/JobSystem/JobSystem.cpp
 		include/Todo/JobSystem/JobSystem.hpp
 		include/Todo/Core/Helper.hpp
-		src/Logger.cpp
+		src/Core/Logger.cpp
+		src/JobSystem/Job.cpp
+		include/Todo/JobSystem/Job.hpp
+		include/Todo/Multithreading/SpinlockMutex.hpp
+		include/Todo/Multithreading/Lockguard.hpp
+		src/Multithreading/SpinlockMutex.cpp
+		src/Multithreading/Future.cpp
+		include/Todo/Multithreading/Future.hpp
+		src/Multithreading/ThreadsafeStack.cpp
+		include/Todo/Multithreading/ThreadsafeStack.hpp
+		src/Multithreading/Mutex.cpp
+		include/Todo/Multithreading/Mutex.hpp
+		src/Multithreading/ThreadsafeQueue.cpp
+		include/Todo/Multithreading/ThreadsafeQueue.hpp
+		include/Todo/Multithreading/TMutex.hpp
 )
 
 if(TODO_STATIC)
@@ -52,7 +66,8 @@ else()
 	endif()
 endif()
 
-if(TODO_REMAINING_THREAD)
+message(TODO_REMAINING_THREAD)
+if(TODO_REMAINING_THREAD AND ${TODO_REMAINING_THREAD} GREATER 0)
 	target_compile_definitions(Todo PUBLIC TODO_REMAINING_THREAD=${TODO_REMAINING_THREAD})
 endif()
 
@@ -80,22 +95,20 @@ target_precompile_headers(Todo PUBLIC
 		<memory>
 		<source_location>
 
+		# Exception related stuff
+		<exception>
+		<stdexcept>
+
 		# String & IO manipulation
 		<filesystem>
 		<string>
 		<string_view>
 
 		# Containers
-		<optional>
-		<tuple>
-		<variant>
 		<array>
-		<any>
 		<vector>
-		<map>
-		<unordered_map>
-		<set>
-		<unordered_set>
+		<stack>
+		<queue>
 
 		# C-Types Helpers
 		<cstdint>

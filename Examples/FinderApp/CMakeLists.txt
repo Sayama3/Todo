@@ -8,7 +8,7 @@ project(
 )
 
 set(FINDER_SRC
-	src/main.cpp
+		src/main.cpp
 )
 
 add_executable(Finder ${FINDER_SRC})

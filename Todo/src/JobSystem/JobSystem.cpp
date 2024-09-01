@@ -16,10 +16,8 @@ namespace Todo {
 
 	JobSystem::~JobSystem()
 	{
-		m_Running = false;
-		for (auto& thread : m_Threads) {
-			thread.TryJoin();
-		}
+		m_Running.store(false, std::memory_order_acq_rel);
+		m_Threads.clear();
 	}
 
 	void JobSystem::Poll()

@@ -7,6 +7,9 @@
 #include "Todo/Core/Helper.hpp"
 #include "Todo/Core/Logger.hpp"
 
+using namespace std::string_literals;
+using namespace std::string_view_literals;
+
 namespace Todo
 {
 	static inline std::unique_ptr<JobSystem> s_JobSystem{nullptr};
@@ -21,7 +24,7 @@ namespace Todo
 	{
 		auto threadCount = GetAvailableThreadCount();
 #ifndef TODO_USE_ALL_THREADS
-		return std::max(TODO_MIN_THREAD_COUNT, threadCount - TODO_REMAINING_THREAD)
+		return (threadCount - TODO_REMAINING_THREAD) > TODO_MIN_THREAD_COUNT ? (threadCount - TODO_REMAINING_THREAD) : TODO_MIN_THREAD_COUNT;
 #else
 		return threadCount;
 #endif
@@ -33,7 +36,8 @@ namespace Todo
 			TODO_ERROR("The Job System is already initialized. Replacing the old one with the new one.");
 		}
 		s_JobSystem = std::make_unique<JobSystem>(threadCount);
-		TODO_INFO("Todo Initialized.");
+
+		TODO_INFO("Todo Initialized with "s + std::to_string(threadCount) + " threads."s);
 	}
 
 	void Initialize(std::unique_ptr<JobSystem> jobsystem) {
