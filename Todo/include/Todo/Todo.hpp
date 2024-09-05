@@ -10,7 +10,7 @@
 #include "Todo/Multithreading/Lockguard.hpp"
 #include "Todo/Multithreading/SpinlockMutex.hpp"
 #include "Todo/Multithreading/ThreadsafeStack.hpp"
-#include "Todo/Multithreading/ThreadsafeQueue.hpp"
+#include "Todo/Multithreading/SafeQueue.hpp"
 #include "Todo/JobSystem/JobSystem.hpp"
 
 

@@ -21,7 +21,11 @@ add_executable(
 		src/tests_basics.cpp
 		src/tests_threads.cpp
 		src/tests_lockbased_datastructs.cpp
+		src/Profiler.cpp
+		include/Profiler.hpp
+		include/Logger.hpp
 )
+target_include_directories(test_todo PRIVATE include)
 
 # C++ Properties of the library
 set_target_properties(test_todo PROPERTIES

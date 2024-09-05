@@ -22,8 +22,8 @@ set(TODO_SRC
 		include/Todo/Multithreading/ThreadsafeStack.hpp
 		src/Multithreading/Mutex.cpp
 		include/Todo/Multithreading/Mutex.hpp
-		src/Multithreading/ThreadsafeQueue.cpp
-		include/Todo/Multithreading/ThreadsafeQueue.hpp
+		src/Multithreading/SafeQueue.cpp
+		include/Todo/Multithreading/SafeQueue.hpp
 		include/Todo/Multithreading/TMutex.hpp
 )
 
