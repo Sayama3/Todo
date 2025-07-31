@@ -68,7 +68,7 @@ namespace Todo {
 		uint64_t count() const;
 	private:
 		std::stack<T> m_Stack;
-		mutable Mutex m_Mutex;
+		mutable StdMutex m_Mutex;
 	};
 
 	template<typename T>

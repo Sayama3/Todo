@@ -11,7 +11,7 @@ namespace Todo
 
 	void SpinlockMutex::lock()
 	{
-		while (m_Flag.test_and_set(std::memory_order_release));
+		while (m_Flag.test_and_set(std::memory_order_acq_rel));
 	}
 
 	void SpinlockMutex::unlock()
@@ -20,6 +20,6 @@ namespace Todo
 	}
 
 	bool SpinlockMutex::try_lock() noexcept {
-		return !m_Flag.test_and_set(std::memory_order_release);
+		return !m_Flag.test_and_set(std::memory_order_acq_rel);
 	}
 }

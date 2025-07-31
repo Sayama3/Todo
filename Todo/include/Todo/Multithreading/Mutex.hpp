@@ -4,8 +4,10 @@
 
 #pragma once
 
+#include "MutexConcept.hpp"
+#include "SpinlockMutex.hpp"
 #include "TMutex.hpp"
 
 namespace Todo {
-	using Mutex = TMutex<std::mutex>;
+	using StdMutex = TMutex<std::mutex>;
 } // Todo

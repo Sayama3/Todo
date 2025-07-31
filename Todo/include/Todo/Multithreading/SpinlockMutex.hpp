@@ -7,9 +7,6 @@
 #include "Lockguard.hpp"
 
 namespace Todo {
-	class SpinlockMutex;
-	using SpinLockGuard = Lockguard<SpinlockMutex>;
-	using UniqueSpinLockGuard = UniqueLockguard<SpinlockMutex>;
 
 	class SpinlockMutex {
 	public:
@@ -21,10 +18,13 @@ namespace Todo {
 		void unlock();
 		bool try_lock() noexcept;
 	public:
-		[[maybe_unused]] [[nodiscard]] SpinLockGuard Guard() { return SpinLockGuard{this}; }
-		[[maybe_unused]] [[nodiscard]] UniqueSpinLockGuard UniqueGuard() { return UniqueSpinLockGuard{*this}; }
+		[[maybe_unused]] [[nodiscard]] Lockguard<SpinlockMutex> Guard() { return Lockguard<SpinlockMutex>{this}; }
+		[[maybe_unused]] [[nodiscard]] UniqueLockguard<SpinlockMutex> UniqueGuard() { return UniqueLockguard<SpinlockMutex>{*this}; }
 	private:
 		std::atomic_flag m_Flag;
 	};
 
-} // Todo
+	using SpinLockGuard = Lockguard<SpinlockMutex>;
+	using UniqueSpinLockGuard = UniqueLockguard<SpinlockMutex>;
+
+}
