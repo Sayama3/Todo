@@ -26,6 +26,7 @@ set(TODO_SRC
 		include/Todo/Multithreading/SafeQueue.hpp
 		include/Todo/Multithreading/TMutex.hpp
 		include/Todo/Multithreading/MutexConcept.hpp
+		include/Todo/Multithreading/Typepadder.hpp
 )
 
 if(TODO_STATIC)
@@ -96,6 +97,7 @@ target_precompile_headers(Todo PUBLIC
 		<memory>
 		<source_location>
 		<concepts>
+		<type_traits>
 
 		# Exception related stuff
 		<exception>

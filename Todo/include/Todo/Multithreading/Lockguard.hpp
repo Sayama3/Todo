@@ -30,4 +30,18 @@ namespace Todo {
 	template<typename Mut>
 	using UniqueLockguard = std::unique_lock<Mut>;
 
+	///
+	/// Lockguard validating at compile time if the type provided is valid.
+	/// Some time, it might still be needed to use the original "Todo::Lockguard".
+	///
+	template<CMutex Mutex>
+	using CstLockguard = Lockguard<Mutex>;
+
+	///
+	/// UniqueLockguard validating at compile time if the type provided is valid.
+	/// Some time, it might still be needed to use the original "Todo::UniqueLockguard".
+	///
+	template<CMutex Mutex>
+	using CstUniqueLockguard = UniqueLockguard<Mutex>;
+
 } // Todo
