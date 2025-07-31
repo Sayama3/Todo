@@ -13,7 +13,7 @@ namespace Todo {
 		empty_stack();
 	};
 
-	template<typename T>
+	template<std::movable T>
 	class ThreadsafeStack
 	{
 	public:
@@ -71,33 +71,33 @@ namespace Todo {
 		mutable StdMutex m_Mutex;
 	};
 
-	template<typename T>
+	template<std::movable T>
 	uint64_t ThreadsafeStack<T>::count() const {
 		auto guard = m_Mutex.Guard();
 		return m_Stack.size();
 	}
 
-	template<typename T>
+	template<std::movable T>
 	ThreadsafeStack<T>::ThreadsafeStack(const ThreadsafeStack &other) {
 		auto guard = other.m_Mutex.Guard();
 		m_Stack = other.m_Stack;
 	}
 
-	template<typename T>
+	template<std::movable T>
 	bool ThreadsafeStack<T>::empty() const
 	{
 		auto lock = m_Mutex.Guard();
 		return m_Stack.empty();
 	}
 
-	template<typename T>
+	template<std::movable T>
 	void ThreadsafeStack<T>::push(T value)
 	{
 		auto lock = m_Mutex.Guard();
 		m_Stack.push(std::move(value));
 	}
 
-	template<typename T>
+	template<std::movable T>
 	void ThreadsafeStack<T>::pop(T &value)
 	{
 		auto lock = m_Mutex.Guard();
@@ -106,7 +106,7 @@ namespace Todo {
 		m_Stack.pop();
 	}
 
-	template<typename T>
+	template<std::movable T>
 	std::shared_ptr<T> ThreadsafeStack<T>::pop() {
 
 		auto lock = m_Mutex.Guard();
@@ -117,7 +117,7 @@ namespace Todo {
 		m_Stack.pop();
 	}
 
-	template<typename T>
+	template<std::movable T>
 	bool ThreadsafeStack<T>::try_pop(T &value)
 	{
 		auto lock = m_Mutex.Guard();
@@ -127,7 +127,7 @@ namespace Todo {
 		return true;
 	}
 
-	template<typename T>
+	template<std::movable T>
 	std::shared_ptr<T> ThreadsafeStack<T>::try_pop() {
 
 		auto lock = m_Mutex.Guard();

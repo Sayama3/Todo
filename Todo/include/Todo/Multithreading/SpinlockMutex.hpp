@@ -11,6 +11,7 @@ namespace Todo {
 	class SpinlockMutex {
 	public:
 		SpinlockMutex();
+		~SpinlockMutex();
 		SpinlockMutex(const SpinlockMutex&) = delete;
 		SpinlockMutex& operator=(const SpinlockMutex&) = delete;
 	public:
@@ -18,10 +19,11 @@ namespace Todo {
 		void unlock();
 		bool try_lock() noexcept;
 	public:
-		[[maybe_unused]] [[nodiscard]] Lockguard<SpinlockMutex> Guard() { return Lockguard<SpinlockMutex>{this}; }
-		[[maybe_unused]] [[nodiscard]] UniqueLockguard<SpinlockMutex> UniqueGuard() { return UniqueLockguard<SpinlockMutex>{*this}; }
+		[[maybe_unused]] [[nodiscard]] Lockguard<SpinlockMutex> Guard();
+		[[maybe_unused]] [[nodiscard]] UniqueLockguard<SpinlockMutex> UniqueGuard();
+
 	private:
-		std::atomic_flag m_Flag;
+		std::atomic_flag m_Flag=ATOMIC_FLAG_INIT;
 	};
 
 	using SpinLockGuard = Lockguard<SpinlockMutex>;

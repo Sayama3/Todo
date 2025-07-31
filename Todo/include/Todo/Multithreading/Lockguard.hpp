@@ -8,7 +8,7 @@
 
 namespace Todo {
 
-	template<CMutex Mutex>
+	template<typename Mutex>
 	class Lockguard
 	{
 	public:
@@ -27,7 +27,7 @@ namespace Todo {
 		Mutex* m_Mutex {nullptr};
 	};
 
-	template<CMutex Mut>
+	template<typename Mut>
 	using UniqueLockguard = std::unique_lock<Mut>;
 
 } // Todo

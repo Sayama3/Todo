@@ -95,6 +95,7 @@ target_precompile_headers(Todo PUBLIC
 		<algorithm>
 		<memory>
 		<source_location>
+		<concepts>
 
 		# Exception related stuff
 		<exception>

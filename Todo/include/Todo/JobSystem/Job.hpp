@@ -10,9 +10,9 @@ namespace Todo {
 
 	template<typename T>
 	concept IJob = requires(const T& v) {
-		{v.id()} -> JobId;
-		{v.dependencies()} -> const JobId*;
-		{v.dependencies_count()} -> uint64_t;
+		{v.id()} -> std::convertible_to<JobId>;
+		{v.dependencies()} -> std::convertible_to<const JobId*>;
+		{v.dependencies_count()} -> std::convertible_to<uint64_t>;
 	};
 
 	class Job {
