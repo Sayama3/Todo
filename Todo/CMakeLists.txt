@@ -25,6 +25,7 @@ set(TODO_SRC
 		src/Multithreading/SafeQueue.cpp
 		include/Todo/Multithreading/SafeQueue.hpp
 		include/Todo/Multithreading/TMutex.hpp
+		include/Todo/Multithreading/MutexConcept.hpp
 )
 
 if(TODO_STATIC)

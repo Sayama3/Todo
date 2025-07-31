@@ -4,9 +4,11 @@
 
 #pragma once
 
+#include "MutexConcept.hpp"
+
 namespace Todo {
 
-	template<typename Mutex>
+	template<CMutex Mutex>
 	class Lockguard
 	{
 	public:
@@ -25,7 +27,7 @@ namespace Todo {
 		Mutex* m_Mutex {nullptr};
 	};
 
-	template<typename Mut>
+	template<CMutex Mut>
 	using UniqueLockguard = std::unique_lock<Mut>;
 
 } // Todo

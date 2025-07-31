@@ -4,18 +4,18 @@
 
 #pragma once
 
+#include "MutexConcept.hpp"
 #include "Lockguard.hpp"
 
 namespace Todo
 {
-
 
 	/**
 	 * Overload of any mutex adding among other the possibility to fetch
 	 * a Todo::Lockguard or a std::unique_lock from the member functions
 	 * @tparam Mut The mutex type we want to overload.
 	 */
-	template<typename Mut>
+	template<CMutex Mut>
 	class TMutex
 	{
 	public:
@@ -30,6 +30,9 @@ namespace Todo
 		void lock() { m_Mutex.lock(); }
 		void unlock() { m_Mutex.unlock(); }
 		bool try_lock() noexcept {return m_Mutex.try_lock();}
+
+		Mut& get() {return m_Mutex;}
+		const Mut& get() const {return m_Mutex;}
 	public:
 		[[maybe_unused]] [[nodiscard]] Lockguard<TMutex<Mut>> Guard() { return {this}; }
 		[[maybe_unused]] [[nodiscard]] UniqueLockguard<TMutex<Mut>> UniqueGuard() { return {*this }; }

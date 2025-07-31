@@ -9,8 +9,9 @@ namespace Todo
 	class Thread
 	{
 	public:
+		//TODO: Move as template ?
 		using InternalThread = std::jthread;
-		using ID = std::thread::id;
+		using ID = std::jthread::id;
 	public:
 		Thread();
 		explicit Thread(InternalThread t);
