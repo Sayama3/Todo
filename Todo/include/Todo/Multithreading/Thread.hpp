@@ -14,7 +14,10 @@ namespace Todo
 		using ID = std::jthread::id;
 	public:
 		Thread();
-		explicit Thread(InternalThread t);
+		Thread(InternalThread t);
+		Thread(std::string name);
+		Thread(std::string name, InternalThread t);
+
 		~Thread();
 		Thread(Thread&& lft) noexcept;
 		Thread& operator=(Thread&& lft) noexcept;
@@ -27,8 +30,16 @@ namespace Todo
 
 		template<typename Func, typename ... Args>
 		[[maybe_unused]] Thread(Func func, Args&& ... args);
+
+		template<typename Func>
+		[[maybe_unused]] Thread(std::string name, Func func);
+
+		template<typename Func, typename ... Args>
+		[[maybe_unused]] Thread(std::string name, Func func, Args&& ... args);
 	public:
 		[[nodiscard]] ID Id() const;
+		[[nodiscard]] const std::string& Name() const;
+
 		[[nodiscard]] bool Joinable() const;
 		[[nodiscard]] bool Detachable() const {return Joinable();}
 
@@ -41,9 +52,10 @@ namespace Todo
 		void RequestStop();
 	public:
 		InternalThread& GetUnderlyingThread();
-		void swap(Thread& lft);
+		void swap(Thread& lft) noexcept;
 	private:
 		InternalThread m_Thread;
+		std::string m_Name;
 	};
 
 	// ===== Implementation =====
@@ -52,4 +64,10 @@ namespace Todo
 
 	template<typename Func, typename... Args>
 	Thread::Thread(Func func, Args&&... args) : Thread(Thread::InternalThread(func, std::forward<Args>(args)...)) {}
+
+	template<typename Func>
+	Thread::Thread(std::string name, Func func) : Thread(std::move(name), Thread::InternalThread(func)) {}
+
+	template<typename Func, typename... Args>
+	Thread::Thread(std::string name, Func func, Args&&... args) : Thread(std::move(name), Thread::InternalThread(func, std::forward<Args>(args)...)) {}
 }

@@ -15,7 +15,7 @@ namespace Todo {
 	private:
 		void Poll();
 	private:
-		std::atomic<bool> m_Running{true};
+		std::atomic<bool> m_Running{false};
 		std::vector<Thread> m_Threads;
 	};
 

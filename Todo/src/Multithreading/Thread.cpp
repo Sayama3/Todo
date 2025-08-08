@@ -7,9 +7,36 @@
 
 namespace Todo
 {
+	static inline uint64_t GetThreadIdAsInt(const Todo::Thread::ID id) {
+		if constexpr (sizeof(Todo::Thread::ID) >= sizeof(uint64_t)) {
+			return *(const uint64_t*)&id;
+		}
+		else if constexpr (sizeof(Todo::Thread::ID) >= sizeof(uint32_t)) {
+			return *(const uint32_t*)&id;
+		}
+		else if constexpr (sizeof(Todo::Thread::ID) >= sizeof(uint16_t)) {
+			return *(const uint16_t*)&id;
+		}
+		else {
+			return *(const uint8_t*)&id;
+		}
+	}
 
-	Thread::Thread(InternalThread t) : m_Thread(std::move(t)) {}
-	Thread::Thread() : m_Thread() {}
+	static inline std::string GetThreadIdAsStr(const Todo::Thread::ID id) {
+		return std::to_string(GetThreadIdAsInt(id));
+	}
+
+	Thread::Thread() : m_Thread(), m_Name("Thread " + GetThreadIdAsStr(Id())) {
+	}
+
+	Thread::Thread(InternalThread t) : m_Thread(std::move(t)), m_Name("Thread " + GetThreadIdAsStr(Id())) {
+	}
+
+	Thread::Thread(std::string name) : m_Thread(), m_Name(std::move(name)) {
+	}
+
+	Thread::Thread(std::string name, InternalThread t) : m_Thread(std::move(t)), m_Name(std::move(name)) {
+	}
 
 	Thread::~Thread()
 	{
@@ -21,7 +48,11 @@ namespace Todo
 		return m_Thread.get_id();
 	}
 
-	Thread::Thread(Thread &&lft)  noexcept : m_Thread(std::move(lft.m_Thread))
+	const std::string & Thread::Name() const {
+		return m_Name;
+	}
+
+	Thread::Thread(Thread &&lft)  noexcept : m_Thread(std::move(lft.m_Thread)), m_Name(std::move(lft.m_Name))
 	{
 	}
 
@@ -30,10 +61,10 @@ namespace Todo
 		return *this;
 	}
 
-	void Thread::swap(Thread& lft)
-	{
+	void Thread::swap(Thread& lft) noexcept {
 		if(this == &lft) return;
 		std::swap(/*this->*/m_Thread, lft.m_Thread);
+		std::swap(/*this->*/m_Name, lft.m_Name);
 	}
 
 	void Thread::Join() {

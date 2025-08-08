@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "MutexConcept.hpp"
+#include "Concept.hpp"
 
 namespace Todo {
 

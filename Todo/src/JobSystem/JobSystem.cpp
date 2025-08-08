@@ -8,19 +8,22 @@ namespace Todo {
 	JobSystem::JobSystem(const uint32_t threadCount)
 	{
 		m_Threads.reserve(threadCount);
-		for (int i = 0; i < threadCount; ++i)
+		for (uint32_t i = 0; i < threadCount; ++i)
 		{
-			m_Threads.emplace_back(&JobSystem::Poll, this);
+			std::string name = "JobThread " + std::to_string(i);
+			m_Threads.emplace_back(std::move(name), &JobSystem::Poll, this);
 		}
+		m_Running.store(true, std::memory_order_release);
 	}
 
 	JobSystem::~JobSystem()
 	{
-		m_Running.store(false, std::memory_order_acq_rel);
+		m_Running.store(false, std::memory_order_release);
 		m_Threads.clear();
 	}
 
 	void JobSystem::Poll()
 	{
+		//TODO: Poll jobs and execute them
 	}
 } // Todo
