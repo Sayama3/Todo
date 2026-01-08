@@ -9,7 +9,7 @@
 namespace Todo {
 
 	template<typename T, typename Mut = std::mutex>
-	class SafeQueue
+	class ThreadsafeQueue
 	{
 	private:
 		using Mutex = TMutex<Mut>;
@@ -21,10 +21,10 @@ namespace Todo {
 			std::unique_ptr<Node> next;
 		};
 	public:
-		SafeQueue() : m_Head(new Node), m_Tail(m_Head.get()) {}
-		SafeQueue(const SafeQueue&) = delete;
-		SafeQueue& operator=(const SafeQueue&) = delete;
-		~SafeQueue();
+		ThreadsafeQueue() : m_Head(new Node), m_Tail(m_Head.get()) {}
+		ThreadsafeQueue(const ThreadsafeQueue&) = delete;
+		ThreadsafeQueue& operator=(const ThreadsafeQueue&) = delete;
+		~ThreadsafeQueue();
 	public:
 		std::shared_ptr<T> try_pop();
 		bool try_pop(T& value);
@@ -60,7 +60,7 @@ namespace Todo {
 	};
 
 	template<typename T, typename Mut>
-	std::unique_ptr<typename SafeQueue<T, Mut>::Node> SafeQueue<T, Mut>::try_pop_head() {
+	std::unique_ptr<typename ThreadsafeQueue<T, Mut>::Node> ThreadsafeQueue<T, Mut>::try_pop_head() {
 		auto head_lock = m_HeadMutex.Guard();
 		if (m_Head.get() == get_tail()) {
 			return std::unique_ptr<Node>();
@@ -69,7 +69,7 @@ namespace Todo {
 	}
 
 	template<typename T, typename Mut>
-	std::unique_ptr<typename SafeQueue<T, Mut>::Node> SafeQueue<T, Mut>::try_pop_head(T &value) {
+	std::unique_ptr<typename ThreadsafeQueue<T, Mut>::Node> ThreadsafeQueue<T, Mut>::try_pop_head(T &value) {
 		auto head_lock = m_HeadMutex.Guard();
 		if (m_Head.get() == get_tail()) {
 			return std::unique_ptr<Node>();
@@ -79,7 +79,7 @@ namespace Todo {
 	}
 
 	template<typename T, typename Mut>
-	void SafeQueue<T, Mut>::clear()
+	void ThreadsafeQueue<T, Mut>::clear()
 	{
 		auto head_lock = m_HeadMutex.Guard();
 		auto tail_lock = m_TailMutex.Guard();
@@ -87,7 +87,7 @@ namespace Todo {
 		unguard_clear();
 	}
 	template<typename T, typename Mut>
-	void SafeQueue<T, Mut>::unguard_clear()
+	void ThreadsafeQueue<T, Mut>::unguard_clear()
 	{
 		while (!unguard_empty())
 		{
@@ -97,7 +97,7 @@ namespace Todo {
 
 
 	template<typename T, typename Mut>
-	std::unique_ptr<typename SafeQueue<T,Mut>::Node> SafeQueue<T, Mut>::pop_head() {
+	std::unique_ptr<typename ThreadsafeQueue<T,Mut>::Node> ThreadsafeQueue<T, Mut>::pop_head() {
 		std::unique_ptr<Node> old_head = std::move(m_Head);
 		m_Head = std::move(old_head->next);
 		m_Count.fetch_sub(1, std::memory_order_relaxed);
@@ -105,61 +105,61 @@ namespace Todo {
 	}
 
 	template<typename T, typename Mut>
-	SafeQueue<T,Mut>::Node *SafeQueue<T, Mut>::get_tail() {
+	ThreadsafeQueue<T,Mut>::Node *ThreadsafeQueue<T, Mut>::get_tail() {
 		auto lock_guard = m_TailMutex.Guard();
 		return m_Tail;
 	}
 
 	template<typename T, typename Mut>
-	UniqueLockguard<typename Todo::SafeQueue<T, Mut>::Mutex> SafeQueue<T, Mut>::wait_for_data() {
-		UniqueLockguard<Todo::SafeQueue<T, Mut>::Mutex> head_lock = m_HeadMutex.UniqueGuard();
+	UniqueLockguard<typename Todo::ThreadsafeQueue<T, Mut>::Mutex> ThreadsafeQueue<T, Mut>::wait_for_data() {
+		UniqueLockguard<Todo::ThreadsafeQueue<T, Mut>::Mutex> head_lock = m_HeadMutex.UniqueGuard();
 		m_DataCond.wait(head_lock, [&]{return m_Head.get() != get_tail();});
 		return std::move(head_lock);
 	}
 
 	template<typename T, typename Mut>
-	std::unique_ptr<typename SafeQueue<T, Mut>::Node> SafeQueue<T, Mut>::wait_pop_head() {
+	std::unique_ptr<typename ThreadsafeQueue<T, Mut>::Node> ThreadsafeQueue<T, Mut>::wait_pop_head() {
 		auto head_lock{wait_for_data()};
 		return pop_head();
 	}
 
 	template<typename T, typename Mut>
-	std::unique_ptr<typename SafeQueue<T, Mut>::Node> SafeQueue<T, Mut>::wait_pop_head(T &value) {
+	std::unique_ptr<typename ThreadsafeQueue<T, Mut>::Node> ThreadsafeQueue<T, Mut>::wait_pop_head(T &value) {
 		auto head_lock{wait_for_data()};
 		value = std::move(*m_Head->data);
 		return pop_head();
 	}
 
 	template<typename T, typename Mut>
-	void SafeQueue<T, Mut>::wait_and_pop(T &value) {
+	void ThreadsafeQueue<T, Mut>::wait_and_pop(T &value) {
 		auto const old_head = wait_pop_head(value);
 	}
 
 	template<typename T, typename Mut>
-	std::shared_ptr<T> SafeQueue<T, Mut>::wait_and_pop() {
+	std::shared_ptr<T> ThreadsafeQueue<T, Mut>::wait_and_pop() {
 		auto const old_head = wait_pop_head();
 		return old_head->data;
 	}
 
 	template<typename T, typename Mut>
-	SafeQueue<T, Mut>::~SafeQueue() {
+	ThreadsafeQueue<T, Mut>::~ThreadsafeQueue() {
 		unguard_clear();
 	}
 
 	template<typename T, typename Mut>
-	std::shared_ptr<T> SafeQueue<T, Mut>::try_pop() {
+	std::shared_ptr<T> ThreadsafeQueue<T, Mut>::try_pop() {
 		std::unique_ptr<Node> old_head = try_pop_head();
 		return old_head ? old_head->data : std::shared_ptr<T>();
 	}
 
 	template<typename T, typename Mut>
-	bool SafeQueue<T, Mut>::try_pop(T &value) {
+	bool ThreadsafeQueue<T, Mut>::try_pop(T &value) {
 		std::unique_ptr<Node> old_head = try_pop_head(value);
 		return old_head;
 	}
 
 	template<typename T, typename Mut>
-	void SafeQueue<T, Mut>::push(T new_value)
+	void ThreadsafeQueue<T, Mut>::push(T new_value)
 	{
 		// Constructing the shared pointer for the data.
 		auto new_data {std::make_shared<T>(std::move(new_value))};
@@ -190,18 +190,18 @@ namespace Todo {
 	}
 
 	template<typename T, typename Mut>
-	bool SafeQueue<T, Mut>::empty() const {
+	bool ThreadsafeQueue<T, Mut>::empty() const {
 		auto head_guard = m_HeadMutex.Guard();
 		return m_Head.get() == get_tail();
 	}
 
 	template<typename T, typename Mut>
-	bool SafeQueue<T, Mut>::unguard_empty() const {
+	bool ThreadsafeQueue<T, Mut>::unguard_empty() const {
 		return m_Head.get() == m_Tail;
 	}
 
 	template<typename T, typename Mut>
-	uint64_t SafeQueue<T, Mut>::calculate_count() const {
+	uint64_t ThreadsafeQueue<T, Mut>::calculate_count() const {
 		auto head_guard = m_HeadMutex.Guard();
 		auto tail_guard = m_TailMutex.Guard();
 
@@ -214,7 +214,7 @@ namespace Todo {
 		return count;
 	}
 	template<typename T, typename Mut>
-	uint64_t SafeQueue<T, Mut>::count() const {
+	uint64_t ThreadsafeQueue<T, Mut>::count() const {
 		return m_Count.load(std::memory_order_acquire);
 	}
 

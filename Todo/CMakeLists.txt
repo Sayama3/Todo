@@ -16,14 +16,15 @@ set(TODO_SRC
 		include/Todo/Multithreading/SpinlockMutex.hpp
 		include/Todo/Multithreading/Lockguard.hpp
 		src/Multithreading/SpinlockMutex.cpp
-		src/Multithreading/Future.cpp
+		include/Todo/Multithreading/SharedFuture.hpp
 		include/Todo/Multithreading/Future.hpp
-		src/Multithreading/ThreadsafeStack.cpp
+		src/Multithreading/Future.cpp
+        src/Multithreading/ThreadsafeStack.cpp
 		include/Todo/Multithreading/ThreadsafeStack.hpp
 		src/Multithreading/Mutex.cpp
 		include/Todo/Multithreading/Mutex.hpp
-		src/Multithreading/SafeQueue.cpp
-		include/Todo/Multithreading/SafeQueue.hpp
+		src/Multithreading/ThreadsafeQueue.cpp
+		include/Todo/Multithreading/ThreadsafeQueue.hpp
 		include/Todo/Multithreading/TMutex.hpp
 		include/Todo/Multithreading/Typepadder.hpp
 		include/Todo/Multithreading/ThreadsafeMap.hpp

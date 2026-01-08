@@ -59,7 +59,7 @@ TEST(SafeQueue, EnsurePush)
 	while (flag.test_and_set(std::memory_order_release));
 
 	// Creating the stack
-	Todo::SafeQueue<int> m_SafeQueue {};
+	Todo::ThreadsafeQueue<int> m_SafeQueue {};
 	std::array<Todo::Thread, TODO_TEST_THREAD_COUNT> threads;
 
 	{
