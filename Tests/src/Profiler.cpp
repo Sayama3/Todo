@@ -17,12 +17,12 @@ void Profiler::Stop() {
 	end = Clock::now();
 }
 
-Profiler::Clock::duration Profiler::GetDuration() const {
+Profiler::SecDuration Profiler::GetDuration() const {
 	return end - begin;
 }
 
 long double Profiler::GetMilli() const {
-	return std::chrono::duration_cast<std::chrono::duration<long double, std::milli>>(GetDuration()).count();
+	return std::chrono::duration_cast<MilliDuration>(GetDuration()).count();
 }
 
 ScopeProfiler::ScopeProfiler() : m_Name("Unknown"s)

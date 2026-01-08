@@ -52,7 +52,7 @@ TEST(ThreadsafeStack, EnsurePush)
 	EXPECT_EQ(stackCount, TODO_TEST_THREAD_COUNT * TODO_TEST_ELEMENT_COUNT);
 }
 
-TEST(SafeQueue, EnsurePush)
+TEST(ThreadsafeQueue, EnsurePush)
 {
 	// Simple flag to ensure all threads start at the same time.
 	std::atomic_flag flag;

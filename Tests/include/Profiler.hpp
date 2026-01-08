@@ -8,18 +8,22 @@
 
 class Profiler {
 public:
+	using ClockType = long double;
+	using SecDuration = std::chrono::duration<ClockType, std::ratio<1>>;
+	using MilliDuration = std::chrono::duration<ClockType, std::milli>;
 	using Clock = std::chrono::high_resolution_clock;
+	using TimePoint = std::chrono::time_point<Clock, SecDuration>;
 public:
 	Profiler() = default;
 	~Profiler() = default;
 public:
 	void Start();
 	void Stop();
-	Clock::duration GetDuration() const;
-	long double GetMilli() const;
+	[[nodiscard]] SecDuration GetDuration() const;
+	[[nodiscard]] ClockType GetMilli() const;
 private:
-	Clock::time_point begin;
-	Clock::time_point end;
+	TimePoint begin;
+	TimePoint end;
 };
 
 class ScopeProfiler
