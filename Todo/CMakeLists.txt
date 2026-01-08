@@ -26,7 +26,7 @@ set(TODO_SRC
 		src/Multithreading/ThreadsafeQueue.cpp
 		include/Todo/Multithreading/ThreadsafeQueue.hpp
 		include/Todo/Multithreading/TMutex.hpp
-		include/Todo/Multithreading/Typepadder.hpp
+		include/Todo/Multithreading/TypePadder.hpp
 		include/Todo/Multithreading/ThreadsafeMap.hpp
 		include/Todo/Multithreading/Concepts.hpp
 )
