@@ -37,19 +37,19 @@ namespace Todo
 
 #ifndef TODO_DISABLE_LOG
 	#ifndef TODO_TRACE
-		#define TODO_TRACE(message)		Logger::Trace((message))
+		#define TODO_TRACE(message)		::Todo::Logger::Trace((message))
 	#endif
 
 	#ifndef TODO_INFO
-		#define TODO_INFO(message)		Logger::Info((message))
+		#define TODO_INFO(message)		::Todo::Logger::Info((message))
 	#endif
 
 	#ifndef TODO_WARNING
-		#define TODO_WARNING(message)	Logger::Warning((message))
+		#define TODO_WARNING(message)	::Todo::Logger::Warning((message))
 	#endif
 
 	#ifndef TODO_ERROR
-		#define TODO_ERROR(message)		Logger::Error((message))
+		#define TODO_ERROR(message)		::Todo::Logger::Error((message))
 	#endif
 
 	#ifndef TODO_ERR
