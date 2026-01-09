@@ -32,6 +32,7 @@ set(TODO_SRC
 		src/Multithreading/ThreadsafeList.cpp
 		include/Todo/Multithreading/ThreadsafeList.hpp
 		include/Todo/Core/Allocator.hpp
+		include/Todo/Multithreading/LockFreeStack.h
 )
 
 if(TODO_STATIC)

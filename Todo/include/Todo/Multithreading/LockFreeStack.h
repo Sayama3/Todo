@@ -2,8 +2,11 @@
 // Created by Sayama on 09/01/2026.
 //
 
-#include "Todo/Multithreading/ThreadsafeList.hpp"
+#pragma once
 
 namespace Todo
 {
+    class LockFreeStack
+    {
+    };
 } // Todo
