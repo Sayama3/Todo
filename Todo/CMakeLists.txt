@@ -29,6 +29,9 @@ set(TODO_SRC
 		include/Todo/Multithreading/TypePadder.hpp
 		include/Todo/Multithreading/ThreadsafeMap.hpp
 		include/Todo/Multithreading/Concepts.hpp
+		src/Multithreading/ThreadsafeList.cpp
+		include/Todo/Multithreading/ThreadsafeList.hpp
+		include/Todo/Core/Allocator.hpp
 )
 
 if(TODO_STATIC)
@@ -100,6 +103,7 @@ target_precompile_headers(Todo PUBLIC
 		<source_location>
 		<concepts>
 		<type_traits>
+		<new>
 
 		# Exception related stuff
 		<exception>

@@ -36,7 +36,21 @@ namespace Todo
 	public:
 		[[maybe_unused]] [[nodiscard]] Lockguard<TMutex<Mut>> Guard() { return {this}; }
 		[[maybe_unused]] [[nodiscard]] UniqueLockguard<TMutex<Mut>> UniqueGuard() { return {*this }; }
-	private:
+	protected:
 		Mut m_Mutex;
+	};
+
+	template<CSharedMutex Mut>
+	class TSharedMutex : public TMutex<Mut>
+	{
+	public:
+		TSharedMutex() = default;
+		~TSharedMutex() = default;
+	public:
+		void lock_shared() { TMutex<Mut>::m_Mutex.lock_shared(); }
+		void unlock_shared() { TMutex<Mut>::m_Mutex.unlock_shared(); }
+		bool try_lock_shared() noexcept {return TMutex<Mut>::m_Mutex.try_lock_shared();}
+	public:
+		[[maybe_unused]] [[nodiscard]] SharedLockguard<TSharedMutex<Mut>> SharedGuard() { return {*this }; }
 	};
 }

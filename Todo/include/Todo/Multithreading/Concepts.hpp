@@ -5,12 +5,20 @@
 #pragma once
 
 namespace Todo {
-	template<typename T>
-	concept CMutex = requires(T mut)
+	template<typename Mut>
+	concept CMutex = requires(Mut mut)
 	{
 		{ mut.lock() };
 		{ mut.unlock() };
 		{ mut.try_lock() } noexcept -> std::convertible_to<bool>;
+	};
+
+	template<typename Mut>
+	concept CSharedMutex = CMutex<Mut> && requires(Mut mut)
+	{
+		{ mut.lock_shared() };
+		{ mut.unlock_shared() };
+		{ mut.try_lock_shared() } noexcept -> std::convertible_to<bool>;
 	};
 
 	template<typename T>
