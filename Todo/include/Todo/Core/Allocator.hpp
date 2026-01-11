@@ -37,8 +37,8 @@ namespace Todo
         }
 
 
-        void* (*alloc)(std::size_t size) = &malloc;
-        void (*dealloc)(void* ptr) = &free;
+        void* (*alloc)(std::size_t size) = &::operator new; // Could be malloc
+        void (*dealloc)(void* ptr) = &::operator delete; // Could be free
     };
 
     inline Allocator s_Allocator{};
