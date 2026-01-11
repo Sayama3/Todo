@@ -51,7 +51,7 @@ namespace Todo
             CountedNodePtr old_head = head.load(std::memory_order_relaxed);
             for (;;)
             {
-                increase_head_cunt(old_head);
+                increase_head_count(old_head);
                 Node* const ptr = old_head.ptr;
                 if (!ptr)
                 {
@@ -79,7 +79,7 @@ namespace Todo
         }
 
     private:
-        void increase_head_cunt(CountedNodePtr& old_counter)
+        void increase_head_count(CountedNodePtr& old_counter)
         {
             CountedNodePtr new_counter;
             do
