@@ -155,7 +155,7 @@ namespace Todo {
 	template<typename T, typename Mut>
 	bool ThreadsafeQueue<T, Mut>::try_pop(T &value) {
 		std::unique_ptr<Node> old_head = try_pop_head(value);
-		return old_head;
+		return old_head != nullptr;
 	}
 
 	template<typename T, typename Mut>
@@ -215,7 +215,7 @@ namespace Todo {
 	}
 	template<typename T, typename Mut>
 	uint64_t ThreadsafeQueue<T, Mut>::count() const {
-		return m_Count.load(std::memory_order_acquire);
+		return m_Count.load(std::memory_order_relaxed);
 	}
 
 } // Todo

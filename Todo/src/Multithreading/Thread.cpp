@@ -26,10 +26,10 @@ namespace Todo
 		return std::to_string(GetThreadIdAsInt(id));
 	}
 
-	Thread::Thread() : m_Thread(), m_Name("Thread " + GetThreadIdAsStr(Id())) {
+	Thread::Thread() : m_Thread(), m_Name("Thread " + GetThreadIdAsStr(id())) {
 	}
 
-	Thread::Thread(InternalThread t) : m_Thread(std::move(t)), m_Name("Thread " + GetThreadIdAsStr(Id())) {
+	Thread::Thread(InternalThread t) : m_Thread(std::move(t)), m_Name("Thread " + GetThreadIdAsStr(id())) {
 	}
 
 	Thread::Thread(std::string name) : m_Thread(), m_Name(std::move(name)) {
@@ -40,15 +40,15 @@ namespace Todo
 
 	Thread::~Thread()
 	{
-		RequestStop();
-		TryJoin();
+		request_stop();
+		try_join();
 	}
 
-	Thread::ID Thread::Id() const {
+	Thread::ID Thread::id() const {
 		return m_Thread.get_id();
 	}
 
-	const std::string & Thread::Name() const {
+	const std::string & Thread::name() const {
 		return m_Name;
 	}
 
@@ -67,35 +67,35 @@ namespace Todo
 		std::swap(/*this->*/m_Name, lft.m_Name);
 	}
 
-	void Thread::Join() {
-		TODO_ASSERT(Joinable(), "The thread is trying to be Joined but cannot.");
+	void Thread::join() {
+		TODO_ASSERT(joinable(), "The thread is trying to be Joined but cannot.");
 		m_Thread.join();
 	}
 
-	void Thread::Detach() {
-		TODO_ASSERT(Joinable(), "The thread is trying to be Detached but cannot.");
+	void Thread::detach() {
+		TODO_ASSERT(joinable(), "The thread is trying to be Detached but cannot.");
 		m_Thread.detach();
 	}
 
-	bool Thread::Joinable() const {
+	bool Thread::joinable() const {
 		return m_Thread.joinable();
 	}
 
-	bool Thread::TryJoin()
+	bool Thread::try_join()
 	{
-		if(!Joinable()) return false;
-		Join();
+		if(!joinable()) return false;
+		join();
 		return true;
 	}
 
-	bool Thread::TryDetach()
+	bool Thread::try_detach()
 	{
-		if(!Detachable()) return false;
-		Detach();
+		if(!detachable()) return false;
+		detach();
 		return true;
 	}
 
-	void Thread::RequestStop() {
+	void Thread::request_stop() {
 		m_Thread.request_stop();
 	}
 

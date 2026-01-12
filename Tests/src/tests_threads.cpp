@@ -24,9 +24,9 @@ TEST(Threads, HandleJoin) {
 		}
 	}};
 
-	EXPECT_TRUE(t.Joinable());
-	t.Join();
-	EXPECT_FALSE(t.Joinable());
+	EXPECT_TRUE(t.joinable());
+	t.join();
+	EXPECT_FALSE(t.joinable());
 
 	EXPECT_EQ(Counter.load(), CounterTarget);
 }
@@ -49,7 +49,7 @@ TEST(Threads, HandleAtomicIncrement) {
 
 	for (auto& thread : threads)
 	{
-		thread.Join();
+		thread.join();
 	}
 
 	EXPECT_EQ(Counter.load(), CounterTarget * TestThreadCount);

@@ -9,7 +9,6 @@ namespace Todo
 	class Thread
 	{
 	public:
-		//TODO: Move as template ?
 		using InternalThread = std::jthread;
 		using ID = std::jthread::id;
 	public:
@@ -17,7 +16,6 @@ namespace Todo
 		Thread(InternalThread t);
 		Thread(std::string name);
 		Thread(std::string name, InternalThread t);
-
 		~Thread();
 		Thread(Thread&& lft) noexcept;
 		Thread& operator=(Thread&& lft) noexcept;
@@ -37,19 +35,19 @@ namespace Todo
 		template<typename Func, typename ... Args>
 		[[maybe_unused]] Thread(std::string name, Func func, Args&& ... args);
 	public:
-		[[nodiscard]] ID Id() const;
-		[[nodiscard]] const std::string& Name() const;
+		[[nodiscard]] ID id() const;
+		[[nodiscard]] const std::string& name() const;
 
-		[[nodiscard]] bool Joinable() const;
-		[[nodiscard]] bool Detachable() const {return Joinable();}
+		[[nodiscard]] bool joinable() const;
+		[[nodiscard]] bool detachable() const {return joinable();}
 
-		void Join();
-		void Detach();
+		void join();
+		void detach();
 
-		bool TryJoin();
-		bool TryDetach();
+		bool try_join();
+		bool try_detach();
 
-		void RequestStop();
+		void request_stop();
 	public:
 		InternalThread& GetUnderlyingThread();
 		void swap(Thread& lft) noexcept;

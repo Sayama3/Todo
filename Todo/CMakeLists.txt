@@ -16,10 +16,9 @@ set(TODO_SRC
 		include/Todo/Multithreading/SpinlockMutex.hpp
 		include/Todo/Multithreading/Lockguard.hpp
 		src/Multithreading/SpinlockMutex.cpp
-		include/Todo/Multithreading/SharedFuture.hpp
-		include/Todo/Multithreading/Future.hpp
-		src/Multithreading/Future.cpp
-        src/Multithreading/ThreadsafeStack.cpp
+		include/Todo/Async/SharedFuture.hpp
+		include/Todo/Async/Future.hpp
+		src/Multithreading/ThreadsafeStack.cpp
 		include/Todo/Multithreading/ThreadsafeStack.hpp
 		src/Multithreading/Mutex.cpp
 		include/Todo/Multithreading/Mutex.hpp
@@ -34,6 +33,11 @@ set(TODO_SRC
 		include/Todo/Core/Allocator.hpp
 		include/Todo/Multithreading/LockFreeStack.h
 		include/Todo/Multithreading/LockFreeQueue.hpp
+        include/Todo/JobSystem/ThreadPool.hpp
+		src/JobSystem/ThreadPool.cpp
+		include/Todo/Async/Promise.hpp
+		include/Todo/Async/PackagedTask.hpp
+		include/Todo/Async/SharedResult.hpp
 )
 
 if(TODO_STATIC)

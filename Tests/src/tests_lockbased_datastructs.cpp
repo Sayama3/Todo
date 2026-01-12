@@ -40,7 +40,7 @@ TEST(ThreadsafeStack, EnsurePush)
 
 		// Joining them all.
 		for (auto &t: threads) {
-			t.Join();
+			t.join();
 		}
 	}
 	uint64_t stackCount;
@@ -82,7 +82,7 @@ TEST(ThreadsafeQueue, EnsurePush)
 
 		// Joining them all.
 		for (auto &t: threads) {
-			t.Join();
+			t.join();
 		}
 	}
 
