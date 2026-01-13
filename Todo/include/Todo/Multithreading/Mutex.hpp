@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Concepts.hpp"
+#include "../Core/Concepts.hpp"
 #include "SpinlockMutex.hpp"
 #include "TMutex.hpp"
 

@@ -27,7 +27,7 @@ set(TODO_SRC
 		include/Todo/Multithreading/TMutex.hpp
 		include/Todo/Multithreading/TypePadder.hpp
 		include/Todo/Multithreading/ThreadsafeMap.hpp
-		include/Todo/Multithreading/Concepts.hpp
+		include/Todo/Core/Concepts.hpp
 		src/Multithreading/ThreadsafeList.cpp
 		include/Todo/Multithreading/ThreadsafeList.hpp
 		include/Todo/Core/Allocator.hpp
@@ -110,6 +110,8 @@ target_precompile_headers(Todo PUBLIC
 		<concepts>
 		<type_traits>
 		<new>
+		<variant>
+		<optional>
 
 		# Exception related stuff
 		<exception>
