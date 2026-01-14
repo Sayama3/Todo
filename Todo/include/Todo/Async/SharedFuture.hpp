@@ -8,7 +8,7 @@
 
 namespace Todo {
 
-	template<typename T, typename TAlloc>
+	template <typename T, typename TAlloc = TAllocator<T>>
 	class SharedFuture {
 	public:
 		SharedFuture();
