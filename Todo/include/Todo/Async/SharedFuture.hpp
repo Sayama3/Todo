@@ -19,10 +19,11 @@ namespace Todo {
 		SharedFuture &operator=(SharedFuture &&o) noexcept;
 		void swap(SharedFuture &other) noexcept;
 
-		SharedFuture(SharedResult<T, TAlloc> result);
+		explicit SharedFuture(SharedResult<T, TAlloc> result);
 
 	public:
 		[[nodiscard]] bool is_ready() const;
+		[[nodiscard]] bool is_valid() const;
 		void wait() const;
 		[[nodiscard]] const T& get() const;
 
@@ -68,6 +69,12 @@ namespace Todo {
 	}
 
 	template <typename T, typename TAlloc>
+	bool SharedFuture<T, TAlloc>::is_valid() const
+	{
+		return result.is_valid();
+	}
+
+	template <typename T, typename TAlloc>
 	void SharedFuture<T, TAlloc>::wait() const
 	{
 		result.wait_ready();
@@ -76,7 +83,14 @@ namespace Todo {
 	template <typename T, typename TAlloc>
 	const T& SharedFuture<T, TAlloc>::get() const
 	{
-		return result.wait_and_get();
+		if (!result.is_valid())
+		{
+			throw std::future_error(std::future_errc::future_already_retrieved);
+		}
+
+		const T* ptr = result.wait_and_get_ref();
+		TODO_SASSERT(ptr != nullptr);
+		return *ptr;
 	}
 
 	template <typename T, typename TAlloc>

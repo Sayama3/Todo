@@ -8,7 +8,6 @@
 
 namespace Todo
 {
-
     template <typename T, typename Alloc = TAllocator<T>>
     class SharedResult
     {
@@ -50,13 +49,19 @@ namespace Todo
 
         [[maybe_unused]] void set_exception(const std::exception_ptr& exception);
 
-        [[nodiscard]] const T& get();
+        [[nodiscard]] const T* get_ref();
+
+        [[nodiscard]] std::optional<T> get();
 
         void wait_ready();
 
-        [[nodiscard]] const T& wait_and_get();
+        [[nodiscard]] const T* wait_and_get_ref();
+
+        [[nodiscard]] std::optional<T> wait_and_get();
 
         [[nodiscard]] bool is_ready() const;
+
+        [[nodiscard]] bool is_valid() const;
 
         [[nodiscard]] bool has_value() const;
 
@@ -71,10 +76,12 @@ namespace Todo
         std::atomic_uint64_t* p_Count{nullptr};
         std::atomic<Result>* p_Result{nullptr};
         std::atomic_flag* p_Ready{nullptr};
+        std::atomic_flag* p_NotValid{nullptr};
     };
 
     template <typename T, typename Alloc>
-    SharedResult<T, Alloc>::SharedResult() : p_Count(new std::atomic_uint64_t(1)), p_Result(new std::atomic<Result>()), p_Ready(new std::atomic_flag)
+    SharedResult<T, Alloc>::SharedResult() : p_Count(new std::atomic_uint64_t(1)), p_Result(new std::atomic<Result>()),
+                                             p_Ready(new std::atomic_flag), p_NotValid(new std::atomic_flag)
     {
     }
 
@@ -85,7 +92,8 @@ namespace Todo
     }
 
     template <typename T, typename Alloc>
-    SharedResult<T, Alloc>::SharedResult(const SharedResult& o) : p_Count(o.p_Count), p_Result(o.p_Result), p_Ready(o.p_Ready)
+    SharedResult<T, Alloc>::SharedResult(const SharedResult& o) : p_Count(o.p_Count), p_Result(o.p_Result),
+                                                                  p_Ready(o.p_Ready), p_NotValid(o.p_NotValid)
     {
         p_Count->fetch_add(1, std::memory_order_release);
     }
@@ -98,6 +106,7 @@ namespace Todo
         p_Count = o.p_Count;
         p_Result = o.p_Result;
         p_Ready = o.p_Ready;
+        p_NotValid = o.p_NotValid;
 
         p_Count->fetch_add(1, std::memory_order_release);
         return *this;
@@ -122,6 +131,7 @@ namespace Todo
         std::swap(p_Result, o.p_Result);
         std::swap(p_Count, o.p_Count);
         std::swap(p_Ready, o.p_Ready);
+        std::swap(p_NotValid, o.p_NotValid);
     }
 
     template <typename T, typename Alloc>
@@ -145,9 +155,10 @@ namespace Todo
     template <typename T, typename Alloc>
     void SharedResult<T, Alloc>::set_exception(const std::exception_ptr& exception)
     {
-        Result err_res {
+        Result err_res{
             ValueType::V_Error,
-            {new std::exception_ptr(exception)
+            {
+                new std::exception_ptr(exception)
             }
         };
 
@@ -159,13 +170,14 @@ namespace Todo
         }
         else
         {
+            p_NotValid->clear(std::memory_order_relaxed);
             p_Ready->test_and_set(std::memory_order_release);
             p_Ready->notify_all();
         }
     }
 
     template <typename T, typename Alloc>
-    const T& SharedResult<T, Alloc>::get()
+    const T* SharedResult<T, Alloc>::get_ref()
     {
         Result result = p_Result->load(std::memory_order_acquire);
         if (!result.type || !result.value)
@@ -176,19 +188,66 @@ namespace Todo
         switch (result.type)
         {
         case V_Value:
-            return *result.value;
+            return result.value;
             break;
         case V_Error:
             if (*result.error)
                 std::rethrow_exception(*result.error);
             break;
         default:
-            throw std::runtime_error("Value not set.");
             break;
         }
+        TODO_ERR("Value not set.");
+        return nullptr;
+    }
 
-        // Ideally I would use : std::unreachable();
-        return T();
+    template <typename T, typename Alloc>
+    std::optional<T> SharedResult<T, Alloc>::get()
+    {
+        Result null_result{};
+        Result current = p_Result->load(std::memory_order_relaxed);
+        while (p_Result->compare_exchange_weak(current, null_result, std::memory_order_acquire,
+                                               std::memory_order_relaxed));
+        if (p_NotValid->test_and_set(std::memory_order_release))
+        {
+            if (current.value != V_None)
+            {
+                // Ayo, not supposed to get there... I get we will get a
+                throw std::runtime_error("The result is not NONE even though the structure is in invalid mode.");
+            }
+
+            // if true, another thread already set the result to invalid.
+            return std::nullopt;
+        }
+
+        if (current.type != V_None)
+        {
+            switch (current.type)
+            {
+            case V_Value:
+                {
+                    T value = std::move(*current->value);
+                    {
+                        Alloc alloc;
+                        std::destroy_at(current->value);
+                        alloc.deallocate(current.value);
+                    }
+                    return std::move(value);
+                }
+                break;
+            case V_Error:
+                {
+                    std::exception_ptr err = *current.error;
+                    delete current.error;
+                    std::rethrow_exception(err);
+                    break;
+                }
+            default:
+                break;
+            }
+        }
+        TODO_ERR("No value in result.");
+        return std::nullopt;
     }
 
     template <typename T, typename Alloc>
@@ -199,32 +258,34 @@ namespace Todo
             return;
         }
         p_Ready->wait(false, std::memory_order_acquire);
-        return;
     }
 
     template <typename T, typename Alloc>
-    const T& SharedResult<T, Alloc>::wait_and_get()
+    const T* SharedResult<T, Alloc>::wait_and_get_ref()
     {
         wait_ready();
 
-        if (p_Result->type != V_None)
-        {
-            switch (p_Result->type)
-            {
-            case V_Value:
-                return *p_Result->value;
-            case V_Error:
-                std::rethrow_exception(*p_Result->error);
-            default:
-                break;
-            }
-        }
+        return get_ref();
+    }
+
+    template <typename T, typename Alloc>
+    std::optional<T> SharedResult<T, Alloc>::wait_and_get()
+    {
+        wait_ready();
+
+        return get();
     }
 
     template <typename T, typename Alloc>
     bool SharedResult<T, Alloc>::is_ready() const
     {
         return p_Ready->test(std::memory_order_acquire);
+    }
+
+    template <typename T, typename Alloc>
+    bool SharedResult<T, Alloc>::is_valid() const
+    {
+        return p_NotValid->test(std::memory_order_acquire);
     }
 
     template <typename T, typename Alloc>
@@ -242,7 +303,6 @@ namespace Todo
     template <typename T, typename Alloc>
     void SharedResult<T, Alloc>::set(T* data)
     {
-
         Result result{V_Value, data};
         Result current{};
 
@@ -256,6 +316,7 @@ namespace Todo
         }
         else
         {
+            p_NotValid->clear(std::memory_order_relaxed);
             p_Ready->test_and_set(std::memory_order_release);
             p_Ready->notify_all();
         }
@@ -300,10 +361,12 @@ namespace Todo
             delete p_Result;
             delete p_Count;
             delete p_Ready;
+            delete p_NotValid;
         }
 
         p_Result = nullptr;
-        p_Count  = nullptr;
-        p_Ready  = nullptr;
+        p_Count = nullptr;
+        p_Ready = nullptr;
+        p_NotValid = nullptr;
     }
 }

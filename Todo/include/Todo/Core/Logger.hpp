@@ -80,6 +80,8 @@ namespace Todo
 #ifndef TODO_ASSERT
 	#include <cassert>
 	#define TODO_ASSERT(condition,message) if(!(condition)) {TODO_ERROR(message); assert(condition);}
+	#define TODO_SASSERT(condition) TODO_ASSERT(condition, #condition)
 #else
-	#define TODO_ASSERT(...)
+	// #define TODO_ASSERT(...)
+	#define TODO_SASSERT(condition) TODO_ASSERT(condition, #condition)
 #endif
