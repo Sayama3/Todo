@@ -50,9 +50,11 @@ namespace Todo
 
         [[maybe_unused]] void set_exception(const std::exception_ptr& exception);
 
-        [[nodiscard]] T get();
+        [[nodiscard]] const T& get();
 
-        [[nodiscard]] T wait_and_get();
+        void wait_ready();
+
+        [[nodiscard]] const T& wait_and_get();
 
         [[nodiscard]] bool is_ready() const;
 
@@ -163,7 +165,7 @@ namespace Todo
     }
 
     template <typename T, typename Alloc>
-    T SharedResult<T, Alloc>::get()
+    const T& SharedResult<T, Alloc>::get()
     {
         Result result = p_Result->load(std::memory_order_acquire);
         if (!result.type || !result.value)
@@ -190,37 +192,33 @@ namespace Todo
     }
 
     template <typename T, typename Alloc>
-    T SharedResult<T, Alloc>::wait_and_get()
+    void SharedResult<T, Alloc>::wait_ready()
     {
-        auto result = p_Result->load(std::memory_order_relaxed);
-        if (result.type != V_None)
+        if (p_Ready->test(std::memory_order_acquire))
         {
-            switch (result.type)
-            {
-            case V_Value:
-                return *result.value;
-            case V_Error:
-                std::rethrow_exception(*result.error);
-            default:
-                break;
-            }
+            return;
         }
         p_Ready->wait(false, std::memory_order_acquire);
+        return;
+    }
 
-        result = p_Result->load(std::memory_order_relaxed);
-        if (result.type != V_None)
+    template <typename T, typename Alloc>
+    const T& SharedResult<T, Alloc>::wait_and_get()
+    {
+        wait_ready();
+
+        if (p_Result->type != V_None)
         {
-            switch (result.type)
+            switch (p_Result->type)
             {
             case V_Value:
-                return *result.value;
+                return *p_Result->value;
             case V_Error:
-                std::rethrow_exception(*result.error);
+                std::rethrow_exception(*p_Result->error);
             default:
                 break;
             }
         }
-
     }
 
     template <typename T, typename Alloc>
