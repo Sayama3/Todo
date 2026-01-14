@@ -38,6 +38,7 @@ set(TODO_SRC
 		include/Todo/Async/Promise.hpp
 		include/Todo/Async/PackagedTask.hpp
 		include/Todo/Async/SharedResult.hpp
+        include/Todo/Async/SharedResultVoid.hpp
 )
 
 if(TODO_STATIC)

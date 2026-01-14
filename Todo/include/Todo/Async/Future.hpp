@@ -5,7 +5,7 @@
 #pragma once
 
 
-namespace TODO {
+namespace Todo {
 
 	template<typename T>
 	class Future {
