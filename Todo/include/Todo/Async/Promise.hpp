@@ -27,6 +27,10 @@ namespace Todo
         void set_value(const R& value);
         void set_value(R&& value);
         void set_exception( std::exception_ptr p );
+
+        [[nodiscard]] bool is_valid() const;
+        [[nodiscard]] bool is_ready() const;
+
     private:
         SharedResult<R> result;
     };
@@ -59,7 +63,7 @@ namespace Todo
     template <class R>
     Future<R> Promise<R>::get_future()
     {
-        return Future<T>{result};
+        return Future<R>{result};
     }
 
     template <class R>
@@ -78,5 +82,17 @@ namespace Todo
     void Promise<R>::set_exception(std::exception_ptr p)
     {
         result.set_exception(p);
+    }
+
+    template <class R>
+    bool Promise<R>::is_valid() const
+    {
+        return result.is_valid();
+    }
+
+    template <class R>
+    bool Promise<R>::is_ready() const
+    {
+        return result.is_ready();
     }
 }

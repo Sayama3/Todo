@@ -9,7 +9,7 @@
 
 namespace Todo {
 
-	template <typename T, typename TAlloc = TTAlloc>
+	template <typename T, typename TAlloc = TAllocator<T>>
 	class Future {
 	public:
 		Future();
