@@ -1,0 +1,306 @@
+//
+// Created by ianpo on 12/01/2026.
+//
+
+#pragma once
+
+#include "Todo/Core/Allocator.hpp"
+
+namespace Todo
+{
+    template <typename T, typename Alloc = TAllocator<T>>
+    class Result
+    {
+    private:
+        using TypePtr = T*;
+        using ErrPtr = std::exception_ptr*;
+        // using Alloc = TAllocator<T>;
+        enum ValueType : uint8_t
+        {
+            V_None = 0,
+            V_Value,
+            V_Error,
+        };
+
+        struct ResultType
+        {
+            ValueType type{};
+
+            union
+            {
+                TypePtr value{nullptr};
+                ErrPtr error;
+            };
+        };
+
+    public:
+        Result() noexcept;
+        ~Result();
+        Result(const Result& o) = delete;
+        Result& operator=(const Result& o) = delete;
+        Result(Result&& o) noexcept = delete;
+        Result& operator=(Result&& o) noexcept = delete;
+        void swap(Result& o) noexcept = delete;
+
+    public:
+        [[maybe_unused]] void set_value(const T& value);
+
+        [[maybe_unused]] void set_value(T&& value);
+
+        [[maybe_unused]] void set_exception(const std::exception_ptr& exception);
+
+        [[nodiscard]] const T* get_ref();
+
+        [[nodiscard]] std::optional<T> get();
+
+        void wait_ready();
+
+        [[nodiscard]] const T* wait_and_get_ref();
+
+        [[nodiscard]] std::optional<T> wait_and_get();
+
+        [[nodiscard]] bool is_ready() const;
+
+        [[nodiscard]] bool is_valid() const;
+
+        [[nodiscard]] bool has_value() const;
+
+        [[nodiscard]] bool has_error() const;
+
+    private:
+        void release();
+
+        void set(T* data);
+
+    private:
+        std::atomic<ResultType> m_Result{};
+        std::atomic_flag m_Ready{};
+        std::atomic_flag m_NotValid{};
+    };
+
+    template <typename T, typename Alloc>
+    Result<T, Alloc>::Result() noexcept = default;
+
+    template <typename T, typename Alloc>
+    Result<T, Alloc>::~Result()
+    {
+        release();
+    }
+
+    template <typename T, typename Alloc>
+    void Result<T, Alloc>::set_value(const T& value)
+    {
+        Alloc allocator;
+        T* alloc = allocator.allocate(1);
+        std::construct_at(alloc, value);
+        set(alloc);
+    }
+
+    template <typename T, typename Alloc>
+    void Result<T, Alloc>::set_value(T&& value)
+    {
+        Alloc allocator;
+        T* alloc = allocator.allocate(1);
+        std::construct_at(alloc, std::move(value));
+        set(alloc);
+    }
+
+    template <typename T, typename Alloc>
+    void Result<T, Alloc>::set_exception(const std::exception_ptr& exception)
+    {
+        ResultType err_res{
+            ValueType::V_Error,
+            {
+                new std::exception_ptr(exception)
+            }
+        };
+
+        ResultType expected{};
+        if (!m_Result.compare_exchange_strong(expected, err_res, std::memory_order_relaxed, std::memory_order_relaxed))
+        {
+            delete err_res.error;
+            throw std::runtime_error("value already set.");
+        }
+        else
+        {
+            m_NotValid.clear(std::memory_order_relaxed);
+            m_Ready.test_and_set(std::memory_order_release);
+            m_Ready.notify_all();
+        }
+    }
+
+    template <typename T, typename Alloc>
+    const T* Result<T, Alloc>::get_ref()
+    {
+        ResultType ResultType = m_Result.load(std::memory_order_acquire);
+        if (!ResultType.type || !ResultType.value)
+        {
+            throw std::runtime_error("Value not set.");
+        }
+
+        switch (ResultType.type)
+        {
+        case V_Value:
+            return ResultType.value;
+            break;
+        case V_Error:
+            if (*ResultType.error)
+                std::rethrow_exception(*ResultType.error);
+            break;
+        default:
+            break;
+        }
+        TODO_ERR("Value not set.");
+        return nullptr;
+    }
+
+    template <typename T, typename Alloc>
+    std::optional<T> Result<T, Alloc>::get()
+    {
+        ResultType null_result{};
+        ResultType current = m_Result.load(std::memory_order_relaxed);
+        while (m_Result.compare_exchange_weak(current, null_result, std::memory_order_acquire,
+                                               std::memory_order_relaxed));
+        if (m_NotValid.test_and_set(std::memory_order_release))
+        {
+            if (current.value != V_None)
+            {
+                // Ayo, not supposed to get there... I get we will get a
+                throw std::runtime_error("The ResultType is not NONE even though the structure is in invalid mode.");
+            }
+
+            // if true, another thread already set the ResultType to invalid.
+            return std::nullopt;
+        }
+
+        if (current.type != V_None)
+        {
+            switch (current.type)
+            {
+            case V_Value:
+                {
+                    T value = std::move(*current->value);
+                    {
+                        Alloc alloc;
+                        std::destroy_at(current->value);
+                        alloc.deallocate(current.value, 1);
+                    }
+                    return std::move(value);
+                }
+                break;
+            case V_Error:
+                {
+                    std::exception_ptr err = *current.error;
+                    delete current.error;
+                    std::rethrow_exception(err);
+                    break;
+                }
+            default:
+                break;
+            }
+        }
+        TODO_ERR("No value in ResultType.");
+        return std::nullopt;
+    }
+
+    template <typename T, typename Alloc>
+    void Result<T, Alloc>::wait_ready()
+    {
+        if (m_Ready.test(std::memory_order_acquire))
+        {
+            return;
+        }
+        m_Ready.wait(false, std::memory_order_acquire);
+    }
+
+    template <typename T, typename Alloc>
+    const T* Result<T, Alloc>::wait_and_get_ref()
+    {
+        wait_ready();
+
+        return get_ref();
+    }
+
+    template <typename T, typename Alloc>
+    std::optional<T> Result<T, Alloc>::wait_and_get()
+    {
+        wait_ready();
+
+        return get();
+    }
+
+    template <typename T, typename Alloc>
+    bool Result<T, Alloc>::is_ready() const
+    {
+        return m_Ready.test(std::memory_order_acquire);
+    }
+
+    template <typename T, typename Alloc>
+    bool Result<T, Alloc>::is_valid() const
+    {
+        return m_NotValid.test(std::memory_order_acquire);
+    }
+
+    template <typename T, typename Alloc>
+    bool Result<T, Alloc>::has_value() const
+    {
+        return m_Result.load(std::memory_order_acquire).type == V_Value;
+    }
+
+    template <typename T, typename Alloc>
+    bool Result<T, Alloc>::has_error() const
+    {
+        return m_Result.load(std::memory_order_acquire).type == V_Error;
+    }
+
+    template <typename T, typename Alloc>
+    void Result<T, Alloc>::set(T* data)
+    {
+        ResultType resultType{V_Value, data};
+        ResultType current{};
+
+        if (!m_Result.compare_exchange_strong(current, resultType, std::memory_order_relaxed, std::memory_order_relaxed))
+        {
+            std::destroy_at(data);
+            Alloc allocator;
+            allocator.deallocate(data, 1);
+
+            throw std::runtime_error("value already set.");
+        }
+        else
+        {
+            m_NotValid.clear(std::memory_order_relaxed);
+            m_Ready.test_and_set(std::memory_order_release);
+            m_Ready.notify_all();
+        }
+    }
+
+    template <typename T, typename Alloc>
+    void Result<T, Alloc>::release()
+    {
+        ResultType res = m_Result.exchange(ResultType{}, std::memory_order_relaxed);
+        if (res.value)
+        {
+            switch (res.type)
+            {
+            case V_Value:
+                {
+                    std::destroy_at(res.value);
+                    Alloc allocator;
+                    allocator.deallocate(res.value, 1);
+                    break;
+                }
+            case V_Error:
+                {
+                    delete res.error;
+                    break;
+                }
+            default:
+                {
+                    break;
+                }
+            }
+        }
+
+    }
+}

@@ -28,11 +28,11 @@ namespace Todo {
 		[[nodiscard]] const T& get() const;
 
 	private:
-		SharedResult<T, TAlloc> result;
+		SharedResult<T, TAlloc> m_Result;
 	};
 
 	template <typename T, typename TAlloc>
-	SharedFuture<T, TAlloc>::SharedFuture() = default;
+	SharedFuture<T, TAlloc>::SharedFuture() : m_Result(MakeSharedResult<T, TAlloc>()) {}
 
 	template <typename T, typename TAlloc>
 	SharedFuture<T, TAlloc>::~SharedFuture() = default;
@@ -44,7 +44,7 @@ namespace Todo {
 	SharedFuture<T, TAlloc>& SharedFuture<T, TAlloc>::operator=(const SharedFuture& o) = default;
 
 	template <typename T, typename TAlloc>
-	SharedFuture<T, TAlloc>::SharedFuture(SharedFuture&& o) noexcept
+	SharedFuture<T, TAlloc>::SharedFuture(SharedFuture&& o) noexcept : m_Result(MakeSharedResult<T, TAlloc>())
 	{
 		swap(o);
 	}
@@ -59,42 +59,42 @@ namespace Todo {
 	template <typename T, typename TAlloc>
 	void SharedFuture<T, TAlloc>::swap(SharedFuture& other) noexcept
 	{
-		std::swap(result, other.result);
+		std::swap(m_Result, other.m_Result);
 	}
 
 	template <typename T, typename TAlloc>
 	bool SharedFuture<T, TAlloc>::is_ready() const
 	{
-		return result.is_ready();
+		return m_Result->is_ready();
 	}
 
 	template <typename T, typename TAlloc>
 	bool SharedFuture<T, TAlloc>::is_valid() const
 	{
-		return result.is_valid();
+		return m_Result->is_valid();
 	}
 
 	template <typename T, typename TAlloc>
 	void SharedFuture<T, TAlloc>::wait() const
 	{
-		result.wait_ready();
+		m_Result->wait_ready();
 	}
 
 	template <typename T, typename TAlloc>
 	const T& SharedFuture<T, TAlloc>::get() const
 	{
-		if (!result.is_valid())
+		if (!m_Result->is_valid())
 		{
 			throw std::future_error(std::future_errc::future_already_retrieved);
 		}
 
-		const T* ptr = result.wait_and_get_ref();
+		const T* ptr = m_Result->wait_and_get_ref();
 		TODO_SASSERT(ptr != nullptr);
 		return *ptr;
 	}
 
 	template <typename T, typename TAlloc>
-	SharedFuture<T, TAlloc>::SharedFuture(SharedResult<T, TAlloc> result) : result(std::move(result))
+	SharedFuture<T, TAlloc>::SharedFuture(SharedResult<T, TAlloc> result) : m_Result(std::move(result))
 	{
 	}
 } // namespace EID

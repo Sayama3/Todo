@@ -37,8 +37,10 @@ set(TODO_SRC
 		src/JobSystem/ThreadPool.cpp
 		include/Todo/Async/Promise.hpp
 		include/Todo/Async/PackagedTask.hpp
+		include/Todo/Async/Result.hpp
+        include/Todo/Async/ResultVoid.hpp
+		include/Todo/Core/FunctionWrapper.hpp
 		include/Todo/Async/SharedResult.hpp
-        include/Todo/Async/SharedResultVoid.hpp
 )
 
 if(TODO_STATIC)

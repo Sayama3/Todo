@@ -9,6 +9,8 @@
 
 namespace Todo {
 
+	// The new future should be faster than the MSVC implementation and about fast as GCC/CLang implementation if atomic_16 is available.
+
 	template <typename T, typename TAlloc = TAllocator<T>>
 	class Future {
 	public:
@@ -35,13 +37,13 @@ namespace Todo {
 	};
 
 	template <typename T, typename TAlloc>
-	Future<T, TAlloc>::Future() = default;
+	Future<T, TAlloc>::Future() : m_Result(MakeSharedResult<T,TAlloc>()) {}
 
 	template <typename T, typename TAlloc>
 	Future<T, TAlloc>::~Future() = default;
 
 	template <typename T, typename TAlloc>
-	Future<T, TAlloc>::Future(Future&& o) noexcept
+	Future<T, TAlloc>::Future(Future&& o) noexcept : m_Result(MakeSharedResult<T, TAlloc>())
 	{
 		swap(o);
 	}
@@ -74,25 +76,25 @@ namespace Todo {
 	template <typename T, typename TAlloc>
 	bool Future<T, TAlloc>::is_ready() const
 	{
-		return m_Result.is_ready();
+		return m_Result->is_ready();
 	}
 
 	template <typename T, typename TAlloc>
 	bool Future<T, TAlloc>::is_valid() const
 	{
-		return m_Result.is_valid();
+		return m_Result->is_valid();
 	}
 
 	template <typename T, typename TAlloc>
 	void Future<T, TAlloc>::wait() const
 	{
-		m_Result.wait();
+		m_Result->wait();
 	}
 
 	template <typename T, typename TAlloc>
 	T Future<T, TAlloc>::get() const
 	{
-		std::optional<T> result = m_Result.wait_and_get();
+		std::optional<T> result = m_Result->wait_and_get();
 		if (!result)
 		{
 			throw std::future_error(std::future_errc::future_already_retrieved);

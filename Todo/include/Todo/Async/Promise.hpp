@@ -3,6 +3,7 @@
 //
 
 #pragma once
+
 #include "Future.hpp"
 #include "SharedResult.hpp"
 
@@ -32,17 +33,17 @@ namespace Todo
         [[nodiscard]] bool is_ready() const;
 
     private:
-        SharedResult<R, Alloc> result;
+        SharedResult<R, Alloc> m_Result;
     };
 
     template <class R, typename Alloc>
-    Promise<R, Alloc>::Promise() = default;
+    Promise<R, Alloc>::Promise() : m_Result(MakeSharedResult<R, Alloc>()) {}
 
     template <class R, typename Alloc>
     Promise<R, Alloc>::~Promise() = default;
 
     template <class R, typename Alloc>
-    Promise<R, Alloc>::Promise(Promise&& o) noexcept
+    Promise<R, Alloc>::Promise(Promise&& o) noexcept : m_Result(MakeSharedResult<R, Alloc>())
     {
         swap(o);
     }
@@ -57,42 +58,42 @@ namespace Todo
     template <class R, typename Alloc>
     void Promise<R, Alloc>::swap(Promise& o) noexcept
     {
-        std::swap(result, o.result);
+        std::swap(m_Result, o.m_Result);
     }
 
     template <class R, typename Alloc>
     Future<R, Alloc> Promise<R, Alloc>::get_future()
     {
-        return Future<R, Alloc>{result};
+        return Future<R, Alloc>{m_Result};
     }
 
     template <class R, typename Alloc>
     void Promise<R, Alloc>::set_value(const R& value)
     {
-        result.set_value(value);
+        m_Result.set_value(value);
     }
 
     template <class R, typename Alloc>
     void Promise<R, Alloc>::set_value(R&& value)
     {
-        result.set_value(std::move(value));
+        m_Result.set_value(std::move(value));
     }
 
     template <class R, typename Alloc>
     void Promise<R, Alloc>::set_exception(std::exception_ptr p)
     {
-        result.set_exception(p);
+        m_Result.set_exception(p);
     }
 
     template <class R, typename Alloc>
     bool Promise<R, Alloc>::is_valid() const
     {
-        return result.is_valid();
+        return m_Result.is_valid();
     }
 
     template <class R, typename Alloc>
     bool Promise<R, Alloc>::is_ready() const
     {
-        return result.is_ready();
+        return m_Result.is_ready();
     }
 }
