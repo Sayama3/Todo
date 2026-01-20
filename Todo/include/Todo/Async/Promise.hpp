@@ -8,7 +8,7 @@
 
 namespace Todo
 {
-    template<class R>
+    template<class R, typename Alloc = TAllocator<R>>
     class Promise
     {
     public:
@@ -22,7 +22,7 @@ namespace Todo
 
     public:
 
-        Todo::Future<R> get_future();
+        Todo::Future<R, Alloc> get_future();
 
         void set_value(const R& value);
         void set_value(R&& value);
@@ -32,66 +32,66 @@ namespace Todo
         [[nodiscard]] bool is_ready() const;
 
     private:
-        SharedResult<R> result;
+        SharedResult<R, Alloc> result;
     };
 
-    template <class R>
-    Promise<R>::Promise() = default;
+    template <class R, typename Alloc>
+    Promise<R, Alloc>::Promise() = default;
 
-    template <class R>
-    Promise<R>::~Promise() = default;
+    template <class R, typename Alloc>
+    Promise<R, Alloc>::~Promise() = default;
 
-    template <class R>
-    Promise<R>::Promise(Promise&& o) noexcept
+    template <class R, typename Alloc>
+    Promise<R, Alloc>::Promise(Promise&& o) noexcept
     {
         swap(o);
     }
 
-    template <class R>
-    Promise<R>& Promise<R>::operator=(Promise&& o) noexcept
+    template <class R, typename Alloc>
+    Promise<R, Alloc>& Promise<R, Alloc>::operator=(Promise&& o) noexcept
     {
         swap(o);
         return *this;
     }
 
-    template <class R>
-    void Promise<R>::swap(Promise& o) noexcept
+    template <class R, typename Alloc>
+    void Promise<R, Alloc>::swap(Promise& o) noexcept
     {
         std::swap(result, o.result);
     }
 
-    template <class R>
-    Future<R> Promise<R>::get_future()
+    template <class R, typename Alloc>
+    Future<R, Alloc> Promise<R, Alloc>::get_future()
     {
-        return Future<R>{result};
+        return Future<R, Alloc>{result};
     }
 
-    template <class R>
-    void Promise<R>::set_value(const R& value)
+    template <class R, typename Alloc>
+    void Promise<R, Alloc>::set_value(const R& value)
     {
         result.set_value(value);
     }
 
-    template <class R>
-    void Promise<R>::set_value(R&& value)
+    template <class R, typename Alloc>
+    void Promise<R, Alloc>::set_value(R&& value)
     {
         result.set_value(std::move(value));
     }
 
-    template <class R>
-    void Promise<R>::set_exception(std::exception_ptr p)
+    template <class R, typename Alloc>
+    void Promise<R, Alloc>::set_exception(std::exception_ptr p)
     {
         result.set_exception(p);
     }
 
-    template <class R>
-    bool Promise<R>::is_valid() const
+    template <class R, typename Alloc>
+    bool Promise<R, Alloc>::is_valid() const
     {
         return result.is_valid();
     }
 
-    template <class R>
-    bool Promise<R>::is_ready() const
+    template <class R, typename Alloc>
+    bool Promise<R, Alloc>::is_ready() const
     {
         return result.is_ready();
     }

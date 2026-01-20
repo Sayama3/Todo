@@ -230,7 +230,7 @@ namespace Todo
                     {
                         Alloc alloc;
                         std::destroy_at(current->value);
-                        alloc.deallocate(current.value);
+                        alloc.deallocate(current.value, 1);
                     }
                     return std::move(value);
                 }
@@ -310,7 +310,7 @@ namespace Todo
         {
             std::destroy_at(data);
             Alloc allocator;
-            allocator.deallocate(data);
+            allocator.deallocate(data, 1);
 
             throw std::runtime_error("value already set.");
         }
@@ -343,7 +343,7 @@ namespace Todo
                     {
                         std::destroy_at(res.value);
                         Alloc allocator;
-                        allocator.deallocate(res.value);
+                        allocator.deallocate(res.value, 1);
                         break;
                     }
                 case V_Error:
