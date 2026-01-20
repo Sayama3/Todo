@@ -9,15 +9,15 @@
 
 namespace Todo
 {
-    template <typename T, typename Alloc = TAllocator<T>>
-    using SharedResult = std::shared_ptr<Result<T, Alloc>>;
+    template <typename T>
+    using SharedResult = std::shared_ptr<Result<T>>;
 
     using SharedVoidResult = std::shared_ptr<Result<void>>;
 
-    template <typename T, typename Alloc = TAllocator<T>>
-    static inline SharedResult<T, Alloc> MakeSharedResult()
+    template <typename T>
+    static inline SharedResult<T> MakeSharedResult()
     {
-        return std::make_shared<Result<T, Alloc>>();
+        return std::make_shared<Result<T>>();
     }
 
     static inline SharedVoidResult MakeSharedVoidResult()

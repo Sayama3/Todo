@@ -11,7 +11,7 @@ namespace Todo {
 
 	// The new future should be faster than the MSVC implementation and about fast as GCC/CLang implementation if atomic_16 is available.
 
-	template <typename T, typename TAlloc = TAllocator<T>>
+	template <typename T>
 	class Future {
 	public:
 		Future();
@@ -22,9 +22,9 @@ namespace Todo {
 		Future &operator=(Future &&o) noexcept;
 		void swap(Future &o) noexcept;
 
-		Future(SharedResult<T, TAlloc> result);
+		Future(SharedResult<T> result);
 	public:
-		SharedFuture<T, TAlloc> share();
+		SharedFuture<T> share();
 
 	public:
 		[[nodiscard]] bool is_ready() const;
@@ -33,66 +33,66 @@ namespace Todo {
 		[[nodiscard]] T get() const;
 
 	private:
-		SharedResult<T, TAlloc> m_Result;
+		SharedResult<T> m_Result;
 	};
 
-	template <typename T, typename TAlloc>
-	Future<T, TAlloc>::Future() : m_Result(MakeSharedResult<T,TAlloc>()) {}
+	template <typename T>
+	Future<T>::Future() : m_Result(MakeSharedResult<T>()) {}
 
-	template <typename T, typename TAlloc>
-	Future<T, TAlloc>::~Future() = default;
+	template <typename T>
+	Future<T>::~Future() = default;
 
-	template <typename T, typename TAlloc>
-	Future<T, TAlloc>::Future(Future&& o) noexcept : m_Result(MakeSharedResult<T, TAlloc>())
+	template <typename T>
+	Future<T>::Future(Future&& o) noexcept : m_Result(MakeSharedResult<T>())
 	{
 		swap(o);
 	}
 
-	template <typename T, typename TAlloc>
-	Future<T, TAlloc>& Future<T, TAlloc>::operator=(Future&& o) noexcept
+	template <typename T>
+	Future<T>& Future<T>::operator=(Future&& o) noexcept
 	{
 		swap(o);
 		return *this;
 	}
 
-	template <typename T, typename TAlloc>
-	void Future<T, TAlloc>::swap(Future& o) noexcept
+	template <typename T>
+	void Future<T>::swap(Future& o) noexcept
 	{
 		std::swap(m_Result, o.m_Result);
 	}
 
-	template <typename T, typename TAlloc>
-	Future<T, TAlloc>::Future(SharedResult<T, TAlloc> result)
+	template <typename T>
+	Future<T>::Future(SharedResult<T> result)
 	{
 		m_Result = std::move(result);
 	}
 
-	template <typename T, typename TAlloc>
-	SharedFuture<T, TAlloc> Future<T, TAlloc>::share()
+	template <typename T>
+	SharedFuture<T> Future<T>::share()
 	{
-		return SharedFuture<T, TAlloc>(std::move(m_Result));
+		return SharedFuture<T>(std::move(m_Result));
 	}
 
-	template <typename T, typename TAlloc>
-	bool Future<T, TAlloc>::is_ready() const
+	template <typename T>
+	bool Future<T>::is_ready() const
 	{
 		return m_Result->is_ready();
 	}
 
-	template <typename T, typename TAlloc>
-	bool Future<T, TAlloc>::is_valid() const
+	template <typename T>
+	bool Future<T>::is_valid() const
 	{
 		return m_Result->is_valid();
 	}
 
-	template <typename T, typename TAlloc>
-	void Future<T, TAlloc>::wait() const
+	template <typename T>
+	void Future<T>::wait() const
 	{
 		m_Result->wait();
 	}
 
-	template <typename T, typename TAlloc>
-	T Future<T, TAlloc>::get() const
+	template <typename T>
+	T Future<T>::get() const
 	{
 		std::optional<T> result = m_Result->wait_and_get();
 		if (!result)

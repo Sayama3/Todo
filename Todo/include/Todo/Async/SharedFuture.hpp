@@ -8,7 +8,7 @@
 
 namespace Todo {
 
-	template <typename T, typename TAlloc = TAllocator<T>>
+	template <typename T>
 	class SharedFuture {
 	public:
 		SharedFuture();
@@ -19,7 +19,7 @@ namespace Todo {
 		SharedFuture &operator=(SharedFuture &&o) noexcept;
 		void swap(SharedFuture &other) noexcept;
 
-		explicit SharedFuture(SharedResult<T, TAlloc> result);
+		explicit SharedFuture(SharedResult<T> result);
 
 	public:
 		[[nodiscard]] bool is_ready() const;
@@ -28,60 +28,60 @@ namespace Todo {
 		[[nodiscard]] const T& get() const;
 
 	private:
-		SharedResult<T, TAlloc> m_Result;
+		SharedResult<T> m_Result;
 	};
 
-	template <typename T, typename TAlloc>
-	SharedFuture<T, TAlloc>::SharedFuture() : m_Result(MakeSharedResult<T, TAlloc>()) {}
+	template <typename T>
+	SharedFuture<T>::SharedFuture() : m_Result(MakeSharedResult<T>()) {}
 
-	template <typename T, typename TAlloc>
-	SharedFuture<T, TAlloc>::~SharedFuture() = default;
+	template <typename T>
+	SharedFuture<T>::~SharedFuture() = default;
 
-	template <typename T, typename TAlloc>
-	SharedFuture<T, TAlloc>::SharedFuture(const SharedFuture& o) = default;
+	template <typename T>
+	SharedFuture<T>::SharedFuture(const SharedFuture& o) = default;
 
-	template <typename T, typename TAlloc>
-	SharedFuture<T, TAlloc>& SharedFuture<T, TAlloc>::operator=(const SharedFuture& o) = default;
+	template <typename T>
+	SharedFuture<T>& SharedFuture<T>::operator=(const SharedFuture& o) = default;
 
-	template <typename T, typename TAlloc>
-	SharedFuture<T, TAlloc>::SharedFuture(SharedFuture&& o) noexcept : m_Result(MakeSharedResult<T, TAlloc>())
+	template <typename T>
+	SharedFuture<T>::SharedFuture(SharedFuture&& o) noexcept : m_Result(MakeSharedResult<T>())
 	{
 		swap(o);
 	}
 
-	template <typename T, typename TAlloc>
-	SharedFuture<T, TAlloc>& SharedFuture<T, TAlloc>::operator=(SharedFuture&& o) noexcept
+	template <typename T>
+	SharedFuture<T>& SharedFuture<T>::operator=(SharedFuture&& o) noexcept
 	{
 		swap(o);
 		return *this;
 	}
 
-	template <typename T, typename TAlloc>
-	void SharedFuture<T, TAlloc>::swap(SharedFuture& other) noexcept
+	template <typename T>
+	void SharedFuture<T>::swap(SharedFuture& other) noexcept
 	{
 		std::swap(m_Result, other.m_Result);
 	}
 
-	template <typename T, typename TAlloc>
-	bool SharedFuture<T, TAlloc>::is_ready() const
+	template <typename T>
+	bool SharedFuture<T>::is_ready() const
 	{
 		return m_Result->is_ready();
 	}
 
-	template <typename T, typename TAlloc>
-	bool SharedFuture<T, TAlloc>::is_valid() const
+	template <typename T>
+	bool SharedFuture<T>::is_valid() const
 	{
 		return m_Result->is_valid();
 	}
 
-	template <typename T, typename TAlloc>
-	void SharedFuture<T, TAlloc>::wait() const
+	template <typename T>
+	void SharedFuture<T>::wait() const
 	{
 		m_Result->wait_ready();
 	}
 
-	template <typename T, typename TAlloc>
-	const T& SharedFuture<T, TAlloc>::get() const
+	template <typename T>
+	const T& SharedFuture<T>::get() const
 	{
 		if (!m_Result->is_valid())
 		{
@@ -93,8 +93,8 @@ namespace Todo {
 		return *ptr;
 	}
 
-	template <typename T, typename TAlloc>
-	SharedFuture<T, TAlloc>::SharedFuture(SharedResult<T, TAlloc> result) : m_Result(std::move(result))
+	template <typename T>
+	SharedFuture<T>::SharedFuture(SharedResult<T> result) : m_Result(std::move(result))
 	{
 	}
 } // namespace EID

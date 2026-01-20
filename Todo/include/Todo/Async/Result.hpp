@@ -4,17 +4,21 @@
 
 #pragma once
 
+#include "Todo/Core/Concepts.hpp"
 #include "Todo/Core/Allocator.hpp"
 
 namespace Todo
 {
-    template <typename T, typename Alloc = TAllocator<T>>
+    template <class>
+    class Result;
+
+    template <typename T>
     class Result
     {
     private:
         using TypePtr = T*;
         using ErrPtr = std::exception_ptr*;
-        // using Alloc = TAllocator<T>;
+        using Alloc = TAllocator<T>;
         enum ValueType : uint8_t
         {
             V_None = 0,
@@ -78,17 +82,17 @@ namespace Todo
         std::atomic_flag m_NotValid{};
     };
 
-    template <typename T, typename Alloc>
-    Result<T, Alloc>::Result() noexcept = default;
+    template <typename T>
+    Result<T>::Result() noexcept = default;
 
-    template <typename T, typename Alloc>
-    Result<T, Alloc>::~Result()
+    template <typename T>
+    Result<T>::~Result()
     {
         release();
     }
 
-    template <typename T, typename Alloc>
-    void Result<T, Alloc>::set_value(const T& value)
+    template <typename T>
+    void Result<T>::set_value(const T& value)
     {
         Alloc allocator;
         T* alloc = allocator.allocate(1);
@@ -96,8 +100,8 @@ namespace Todo
         set(alloc);
     }
 
-    template <typename T, typename Alloc>
-    void Result<T, Alloc>::set_value(T&& value)
+    template <typename T>
+    void Result<T>::set_value(T&& value)
     {
         Alloc allocator;
         T* alloc = allocator.allocate(1);
@@ -105,8 +109,8 @@ namespace Todo
         set(alloc);
     }
 
-    template <typename T, typename Alloc>
-    void Result<T, Alloc>::set_exception(const std::exception_ptr& exception)
+    template <typename T>
+    void Result<T>::set_exception(const std::exception_ptr& exception)
     {
         ResultType err_res{
             ValueType::V_Error,
@@ -129,8 +133,8 @@ namespace Todo
         }
     }
 
-    template <typename T, typename Alloc>
-    const T* Result<T, Alloc>::get_ref()
+    template <typename T>
+    const T* Result<T>::get_ref()
     {
         ResultType ResultType = m_Result.load(std::memory_order_acquire);
         if (!ResultType.type || !ResultType.value)
@@ -154,8 +158,8 @@ namespace Todo
         return nullptr;
     }
 
-    template <typename T, typename Alloc>
-    std::optional<T> Result<T, Alloc>::get()
+    template <typename T>
+    std::optional<T> Result<T>::get()
     {
         ResultType null_result{};
         ResultType current = m_Result.load(std::memory_order_relaxed);
@@ -203,8 +207,8 @@ namespace Todo
         return std::nullopt;
     }
 
-    template <typename T, typename Alloc>
-    void Result<T, Alloc>::wait_ready()
+    template <typename T>
+    void Result<T>::wait_ready()
     {
         if (m_Ready.test(std::memory_order_acquire))
         {
@@ -213,48 +217,48 @@ namespace Todo
         m_Ready.wait(false, std::memory_order_acquire);
     }
 
-    template <typename T, typename Alloc>
-    const T* Result<T, Alloc>::wait_and_get_ref()
+    template <typename T>
+    const T* Result<T>::wait_and_get_ref()
     {
         wait_ready();
 
         return get_ref();
     }
 
-    template <typename T, typename Alloc>
-    std::optional<T> Result<T, Alloc>::wait_and_get()
+    template <typename T>
+    std::optional<T> Result<T>::wait_and_get()
     {
         wait_ready();
 
         return get();
     }
 
-    template <typename T, typename Alloc>
-    bool Result<T, Alloc>::is_ready() const
+    template <typename T>
+    bool Result<T>::is_ready() const
     {
         return m_Ready.test(std::memory_order_acquire);
     }
 
-    template <typename T, typename Alloc>
-    bool Result<T, Alloc>::is_valid() const
+    template <typename T>
+    bool Result<T>::is_valid() const
     {
         return m_NotValid.test(std::memory_order_acquire);
     }
 
-    template <typename T, typename Alloc>
-    bool Result<T, Alloc>::has_value() const
+    template <typename T>
+    bool Result<T>::has_value() const
     {
         return m_Result.load(std::memory_order_acquire).type == V_Value;
     }
 
-    template <typename T, typename Alloc>
-    bool Result<T, Alloc>::has_error() const
+    template <typename T>
+    bool Result<T>::has_error() const
     {
         return m_Result.load(std::memory_order_acquire).type == V_Error;
     }
 
-    template <typename T, typename Alloc>
-    void Result<T, Alloc>::set(T* data)
+    template <typename T>
+    void Result<T>::set(T* data)
     {
         ResultType resultType{V_Value, data};
         ResultType current{};
@@ -275,8 +279,8 @@ namespace Todo
         }
     }
 
-    template <typename T, typename Alloc>
-    void Result<T, Alloc>::release()
+    template <typename T>
+    void Result<T>::release()
     {
         ResultType res = m_Result.exchange(ResultType{}, std::memory_order_relaxed);
         if (res.value)
