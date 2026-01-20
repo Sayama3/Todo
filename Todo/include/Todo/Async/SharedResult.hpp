@@ -14,7 +14,7 @@ namespace Todo
     private:
         using TypePtr = T*;
         using ErrPtr = std::exception_ptr*;
-
+        // using Alloc = TAllocator<T>;
         enum ValueType : uint8_t
         {
             V_None = 0,
