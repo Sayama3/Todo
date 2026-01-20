@@ -88,7 +88,7 @@ namespace Todo {
 	template <typename T>
 	void Future<T>::wait() const
 	{
-		m_Result->wait();
+		m_Result->wait_ready();
 	}
 
 	template <typename T>
@@ -101,4 +101,31 @@ namespace Todo {
 		}
 		return std::move(result.value());
 	}
+
+	// void implementation
+
+	template <>
+	class Future<void> {
+	public:
+		Future();
+		~Future();
+		Future(const Future &) = delete;
+		Future &operator=(const Future &) = delete;
+		Future(Future &&o) noexcept;
+		Future &operator=(Future &&o) noexcept;
+		void swap(Future &o) noexcept;
+
+		Future(SharedResult<void> result);
+	public:
+		SharedFuture<void> share();
+
+	public:
+		[[nodiscard]] bool is_ready() const;
+		[[nodiscard]] bool is_valid() const;
+		void wait() const;
+		void get() const;
+
+	private:
+		SharedResult<void> m_Result;
+	};
 } // namespace EID

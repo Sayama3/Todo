@@ -9,7 +9,7 @@
 
 namespace Todo
 {
-    template<class R>
+    template <class R>
     class Promise
     {
     public:
@@ -22,12 +22,11 @@ namespace Todo
         void swap(Promise& o) noexcept;
 
     public:
-
         Todo::Future<R> get_future();
 
         void set_value(const R& value);
         void set_value(R&& value);
-        void set_exception( std::exception_ptr p );
+        void set_exception(std::exception_ptr p);
 
         [[nodiscard]] bool is_valid() const;
         [[nodiscard]] bool is_ready() const;
@@ -37,7 +36,9 @@ namespace Todo
     };
 
     template <class R>
-    Promise<R>::Promise() : m_Result(MakeSharedResult<R>()) {}
+    Promise<R>::Promise() : m_Result(MakeSharedResult<R>())
+    {
+    }
 
     template <class R>
     Promise<R>::~Promise() = default;
@@ -70,30 +71,64 @@ namespace Todo
     template <class R>
     void Promise<R>::set_value(const R& value)
     {
-        m_Result.set_value(value);
+        m_Result->set_value(value);
     }
 
     template <class R>
     void Promise<R>::set_value(R&& value)
     {
-        m_Result.set_value(std::move(value));
+        m_Result->set_value(std::move(value));
     }
 
     template <class R>
     void Promise<R>::set_exception(std::exception_ptr p)
     {
-        m_Result.set_exception(p);
+        m_Result->set_exception(p);
     }
 
     template <class R>
     bool Promise<R>::is_valid() const
     {
-        return m_Result.is_valid();
+        return m_Result->is_valid();
     }
 
     template <class R>
     bool Promise<R>::is_ready() const
     {
-        return m_Result.is_ready();
+        return m_Result->is_ready();
     }
+
+    // Void Promise
+
+
+    template <>
+    class Promise<void>
+    {
+    public:
+        Promise();
+        ~Promise();
+        Promise(const Promise&) = delete;
+        Promise& operator=(const Promise&) = delete;
+        Promise(Promise&& o) noexcept;
+        Promise& operator=(Promise&& o) noexcept;
+        void swap(Promise& o) noexcept;
+
+    public:
+        Todo::Future<void> get_future();
+
+        void set_value();
+        void set_exception(std::exception_ptr p);
+
+        template <typename... Args>
+        void set_value(Args&&... args)
+        {
+            m_Result->set_value();
+        }
+
+        [[nodiscard]] bool is_valid() const;
+        [[nodiscard]] bool is_ready() const;
+
+    private:
+        SharedResult<void> m_Result;
+    };
 }

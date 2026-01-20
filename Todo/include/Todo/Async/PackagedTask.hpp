@@ -3,6 +3,7 @@
 //
 
 #pragma once
+
 #include "Future.hpp"
 #include "Promise.hpp"
 
@@ -31,7 +32,7 @@ namespace Todo
     public:
         [[nodiscard]] bool valid() const noexcept;
         [[nodiscard]] Future<ReturnType> get_future();
-        void operator()(ArgTypes&&... args);
+        void operator()(ArgTypes... args);
         void reset();
     private:
         FunctionType m_Function;
@@ -90,7 +91,7 @@ namespace Todo
     }
 
     template <class ReturnType, class ... ArgTypes>
-    void PackagedTask<ReturnType(ArgTypes...)>::operator()(ArgTypes&&... args)
+    void PackagedTask<ReturnType(ArgTypes...)>::operator()(ArgTypes... args)
     {
         if (m_Promise.is_ready())
         {
@@ -99,13 +100,21 @@ namespace Todo
 
         try
         {
-            ReturnType result = m_Function(std::forward<ArgTypes>(args)...);
-            if constexpr (std::is_move_constructible_v<ReturnType>)
+            if constexpr (std::is_same_v<ReturnType, void>)
             {
-                m_Promise.set_value(std::move(result));
-            } else
+                m_Function(std::forward<ArgTypes>(args)...);
+                m_Promise.set_value();
+            }
+            else
             {
-                m_Promise.set_value(result);
+                ReturnType result = m_Function(std::forward<ArgTypes>(args)...);
+                if constexpr (std::is_move_constructible_v<ReturnType>)
+                {
+                    m_Promise.set_value(std::move(result));
+                } else
+                {
+                    m_Promise.set_value(result);
+                }
             }
         }
         catch (...)

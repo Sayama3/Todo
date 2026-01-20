@@ -97,4 +97,30 @@ namespace Todo {
 	SharedFuture<T>::SharedFuture(SharedResult<T> result) : m_Result(std::move(result))
 	{
 	}
+
+	// Void Specialization
+
+
+	template <>
+	class SharedFuture<void> {
+	public:
+		SharedFuture();
+		~SharedFuture();
+		SharedFuture(const SharedFuture &o);
+		SharedFuture &operator=(const SharedFuture &o);
+		SharedFuture(SharedFuture &&o) noexcept;
+		SharedFuture &operator=(SharedFuture &&o) noexcept;
+		void swap(SharedFuture &other) noexcept;
+
+		explicit SharedFuture(SharedResult<void> result);
+
+	public:
+		[[nodiscard]] bool is_ready() const;
+		[[nodiscard]] bool is_valid() const;
+		void wait() const;
+		void get() const;
+
+	private:
+		SharedResult<void> m_Result;
+	};
 } // namespace EID

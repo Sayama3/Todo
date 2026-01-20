@@ -35,4 +35,15 @@ namespace Todo {
 
 	template <typename HashFunc, typename T>
 	concept HashFor = std::regular_invocable<HashFunc, T> && std::convertible_to<std::invoke_result_t<HashFunc, T>, size_t>;
+
+
+	template<typename F, typename ... Args>
+	concept MovableInvocable = std::move_constructible<F> && std::invocable<F, Args...>;
+
+	template<typename F, typename ... Args>
+	concept MovableVoidInvocable = MovableInvocable<F, void>;
+
+	template<typename F>
+	concept VoidInvocable = std::invocable<F,void>;
+
 }

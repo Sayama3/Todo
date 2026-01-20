@@ -307,4 +307,74 @@ namespace Todo
         }
 
     }
+
+    // Void Specialization
+
+    template <>
+    class Result<void>
+    {
+    private:
+        using TypePtr = std::uintptr_t;
+        using ErrPtr = std::exception_ptr*;
+
+        enum ValueType : uint8_t
+        {
+            V_None = 0,
+            V_Value,
+            V_Error,
+        };
+
+        struct ResultType
+        {
+            ValueType type{};
+
+            union
+            {
+                TypePtr value{0u};
+                ErrPtr error;
+            };
+        };
+
+    public:
+        Result() noexcept;
+        ~Result();
+        Result(const Result& o) = delete;
+        Result& operator=(const Result& o) = delete;
+        Result(Result&& o) noexcept = delete;
+        Result& operator=(Result&& o) noexcept = delete;
+        void swap(Result& o) noexcept = delete;
+
+    public:
+        [[maybe_unused]] void set_value();
+
+        [[maybe_unused]] void set_exception(const std::exception_ptr& exception);
+
+        void get_ref();
+
+        void get();
+
+        void wait_ready();
+
+        void wait_and_get_ref();
+
+        void wait_and_get();
+
+        [[nodiscard]] bool is_ready() const;
+
+        [[nodiscard]] bool is_valid() const;
+
+        [[nodiscard]] bool has_value() const;
+
+        [[nodiscard]] bool has_error() const;
+
+    private:
+        void release();
+
+        void set();
+
+    private:
+        std::atomic<ResultType> m_Result{};
+        std::atomic_flag m_Ready{};
+        std::atomic_flag m_NotValid{};
+    };
 }

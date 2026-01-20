@@ -41,6 +41,10 @@ set(TODO_SRC
         include/Todo/Async/ResultVoid.hpp
 		include/Todo/Core/FunctionWrapper.hpp
 		include/Todo/Async/SharedResult.hpp
+		src/Async/Future.cpp
+		src/Async/SharedFuture.cpp
+		src/Async/Promise.cpp
+		src/Async/Result.cpp
 )
 
 if(TODO_STATIC)
