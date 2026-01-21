@@ -38,7 +38,13 @@ int main(int argc, char* argv[])
 	{
 		Todo::ThreadPool thread_pool;
 
-		auto f = thread_pool.Submit([](){return 1;});
+		auto f = thread_pool.Submit([](){std::this_thread::sleep_for(std::chrono::seconds(5)); return 1;});
+
+		while (!f.is_ready())
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
+		std::cout << "Future is: " << f.get() << std::endl;
 	}
 
 	return 0;
