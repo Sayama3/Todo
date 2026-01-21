@@ -6,7 +6,9 @@
 
 namespace Todo
 {
-    Future<void>::Future() : m_Result(MakeSharedVoidResult()) {}
+    Future<void>::Future() : m_Result(MakeSharedVoidResult())
+    {
+    }
 
     Future<void>::~Future() = default;
 

@@ -6,21 +6,19 @@
 
 namespace Todo
 {
-    
+    Result<void>::Result() noexcept = default;
 
-     Result<void>::Result() noexcept = default;
-
-     Result<void>::~Result()
+    Result<void>::~Result()
     {
         release();
     }
 
-     void Result<void>::set_value()
+    void Result<void>::set_value()
     {
         set();
     }
 
-     void Result<void>::set_exception(const std::exception_ptr& exception)
+    void Result<void>::set_exception(const std::exception_ptr& exception)
     {
         ResultType err_res{
             ValueType::V_Error,
@@ -43,7 +41,7 @@ namespace Todo
         }
     }
 
-     void Result<void>::get_ref()
+    void Result<void>::get_ref()
     {
         ResultType ResultType = m_Result.load(std::memory_order_acquire);
         if (!ResultType.type || !ResultType.value)
@@ -67,12 +65,14 @@ namespace Todo
         return;
     }
 
-     void Result<void>::get()
+    void Result<void>::get()
     {
         ResultType null_result{};
         ResultType current = m_Result.load(std::memory_order_relaxed);
         while (m_Result.compare_exchange_weak(current, null_result, std::memory_order_acquire,
-                                               std::memory_order_relaxed)) {}
+                                              std::memory_order_relaxed))
+        {
+        }
         if (m_NotValid.test_and_set(std::memory_order_release))
         {
             if (current.value != V_None)
@@ -111,7 +111,7 @@ namespace Todo
         return;
     }
 
-     void Result<void>::wait_ready()
+    void Result<void>::wait_ready()
     {
         if (m_Ready.test(std::memory_order_acquire))
         {
@@ -120,46 +120,47 @@ namespace Todo
         m_Ready.wait(false, std::memory_order_acquire);
     }
 
-     void Result<void>::wait_and_get_ref()
+    void Result<void>::wait_and_get_ref()
     {
         wait_ready();
 
         return get_ref();
     }
 
-     void Result<void>::wait_and_get()
+    void Result<void>::wait_and_get()
     {
         wait_ready();
 
         return get();
     }
 
-     bool Result<void>::is_ready() const
+    bool Result<void>::is_ready() const
     {
         return m_Ready.test(std::memory_order_acquire);
     }
 
-     bool Result<void>::is_valid() const
+    bool Result<void>::is_valid() const
     {
         return m_NotValid.test(std::memory_order_acquire);
     }
 
-     bool Result<void>::has_value() const
+    bool Result<void>::has_value() const
     {
         return m_Result.load(std::memory_order_acquire).type == V_Value;
     }
 
-     bool Result<void>::has_error() const
+    bool Result<void>::has_error() const
     {
         return m_Result.load(std::memory_order_acquire).type == V_Error;
     }
 
-     void Result<void>::set()
+    void Result<void>::set()
     {
         ResultType resultType{V_Value, {1}};
         ResultType current{};
 
-        if (!m_Result.compare_exchange_strong(current, resultType, std::memory_order_relaxed, std::memory_order_relaxed))
+        if (!m_Result.compare_exchange_strong(current, resultType, std::memory_order_relaxed,
+                                              std::memory_order_relaxed))
         {
             throw std::runtime_error("value already set.");
         }
@@ -171,7 +172,7 @@ namespace Todo
         }
     }
 
-     void Result<void>::release()
+    void Result<void>::release()
     {
         ResultType res = m_Result.exchange(ResultType{});
         if (res.value)

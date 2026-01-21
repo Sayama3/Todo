@@ -19,6 +19,7 @@ namespace Todo
         using TypePtr = T*;
         using ErrPtr = std::exception_ptr*;
         using Alloc = TAllocator<T>;
+
         enum ValueType : uint8_t
         {
             V_None = 0,
@@ -59,10 +60,10 @@ namespace Todo
 
         void wait_ready();
 
-        template<typename Rep, typename Period>
+        template <typename Rep, typename Period>
         std::future_status wait_for(const std::chrono::duration<Rep, Period>& duration);
 
-        template<typename Clock, typename Duration>
+        template <typename Clock, typename Duration>
         std::future_status wait_until(const std::chrono::time_point<Clock, Duration>& time_point);
 
         [[nodiscard]] const T* wait_and_get_ref();
@@ -326,7 +327,8 @@ namespace Todo
         ResultType resultType{V_Value, {.value = data}};
         ResultType current{};
 
-        if (!m_Result.compare_exchange_strong(current, resultType, std::memory_order_relaxed, std::memory_order_relaxed))
+        if (!m_Result.compare_exchange_strong(current, resultType, std::memory_order_relaxed,
+                                              std::memory_order_relaxed))
         {
             std::destroy_at(data);
             Alloc allocator;
@@ -368,7 +370,6 @@ namespace Todo
                 }
             }
         }
-
     }
 
     // Void Specialization
@@ -418,10 +419,10 @@ namespace Todo
 
         void wait_ready();
 
-        template<typename Rep, typename Period>
+        template <typename Rep, typename Period>
         std::future_status wait_for(const std::chrono::duration<Rep, Period>& duration);
 
-        template<typename Clock, typename Duration>
+        template <typename Clock, typename Duration>
         std::future_status wait_until(const std::chrono::time_point<Clock, Duration>& time_point);
 
         void wait_and_get_ref();
