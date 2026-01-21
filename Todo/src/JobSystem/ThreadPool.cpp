@@ -2,6 +2,8 @@
 // Created by ianpo on 12/01/2026.
 //
 
+#include <memory>
+
 #include "Todo/JobSystem/ThreadPool.hpp"
 
 namespace Todo
@@ -46,17 +48,30 @@ namespace Todo
 
     void ThreadPool::worker_thread()
     {
-        while (!m_Done.load(std::memory_order_seq_cst))
+        local_work_queue = std::make_unique<local_queue_type>();
+
+        while (!m_Done.load(std::memory_order_relaxed))
         {
-            Task task;
-            if (m_WorkQueue.try_pop(task))
-            {
-                task();
-            }
-            else
-            {
-                std::this_thread::yield();
-            }
+            run_pending_task();
+        }
+    }
+
+    void ThreadPool::run_pending_task()
+    {
+        Task task;
+        if (local_work_queue && !local_work_queue->empty())
+        {
+            task = std::move(local_work_queue->front());
+            local_work_queue->pop();
+            task();
+        }
+        else if (m_WorkQueue.try_pop(task))
+        {
+            task();
+        }
+        else
+        {
+            std::this_thread::yield();
         }
     }
 }

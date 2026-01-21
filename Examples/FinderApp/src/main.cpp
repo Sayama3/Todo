@@ -7,9 +7,10 @@
 
 #include <iostream>
 
+#include "Todo/Core/Helper.hpp"
 
 
-using Duration = std::chrono::duration<uint64_t, std::nano>;
+using Duration = std::chrono::duration<uint64_t, std::milli>;
 using Clock = std::chrono::high_resolution_clock;
 using TimePoint = std::chrono::time_point<Clock, Duration>;
 
@@ -24,16 +25,20 @@ static inline int rand(int seed)
 
 int main(int argc, char* argv[])
 {
-	{
-		// Todo::Promise<uint64_t> promise{};
-		std::promise<uint64_t> promise{};
-		auto future = promise.get_future();
-		const TimePoint beg = Clock::now();
-		// const bool ready = future.is_ready();
-		const bool ready = future.wait_for(std::chrono::seconds{0}) != std::future_status::timeout;
-		const TimePoint end = Clock::now();
+	// TimePoint p = std::chrono::time_point_cast<TimePoint>(Clock::now());
+	// TimePoint p = TimePoint(std::chrono::duration_cast<Duration>(Clock::now().time_since_epoch()));
 
-		std::cout << "Time: " << (end - beg).count() << "ns" << std::endl;
+	{
+		Todo::Promise<uint64_t> promise{};
+		// std::promise<uint64_t> promise{};
+		auto future = promise.get_future();
+		const TimePoint beg = Todo::ClockNow<Clock, Duration>();
+		// const bool ready = future.is_ready();
+		// const bool ready = future.wait_for(std::chrono::seconds(1)) != std::future_status::timeout;
+		const bool ready = future.wait_until(std::chrono::steady_clock::now() + std::chrono::seconds(1)) != std::future_status::timeout;
+		const TimePoint end = Todo::ClockNow<Clock, Duration>();
+
+		std::cout << "Time: " << (end - beg).count() << "ms" << std::endl;
 		if (ready)
 		{
 			std::cout << "is ready" << std::endl;
