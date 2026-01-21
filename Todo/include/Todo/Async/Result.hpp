@@ -6,6 +6,7 @@
 
 #include "Todo/Core/Concepts.hpp"
 #include "Todo/Core/Allocator.hpp"
+#include "Todo/Core/Helper.hpp"
 
 namespace Todo
 {
@@ -238,9 +239,9 @@ namespace Todo
     template <typename Rep, typename Period>
     std::future_status Result<T>::wait_for(const std::chrono::duration<Rep, Period>& duration)
     {
-        using Duration = std::chrono::duration<Rep, Period>;
-        using HRClock = std::chrono::high_resolution_clock;
-        using TimePoint = std::chrono::time_point<HRClock, Duration>;
+        using Duration = std::chrono::duration<uint64_t, std::nano>;
+        using Clock = std::chrono::steady_clock; // Recommended by the standard
+        using TimePoint = std::chrono::time_point<Clock, Duration>;
         if (m_Ready.test(std::memory_order_acquire))
         {
             return std::future_status::ready;
@@ -252,13 +253,13 @@ namespace Todo
         if (duration > duration.zero())
         {
             // Busy wait loop to be as close to the duration as possible while being able to early exit
-            const TimePoint start = HRClock::now();
+            const TimePoint start = Todo::ClockNow<Clock, Duration>();
             const TimePoint end = start + duration;
             do
             {
                 std::this_thread::yield();
             }
-            while (HRClock::now() < end && !m_Ready.test(std::memory_order_relaxed));
+            while (Todo::ClockNow<Clock, Duration>() < end && !m_Ready.test(std::memory_order_relaxed));
 
             if (m_Ready.test(std::memory_order_acquire))
             {
@@ -273,7 +274,10 @@ namespace Todo
     template <StdClock Clock, typename Duration>
     std::future_status Result<T>::wait_until(const std::chrono::time_point<Clock, Duration>& time_point)
     {
-        using TimePoint = std::chrono::time_point<Clock, Duration>;
+        using RealDuration = std::chrono::duration<uint64_t, std::nano>;
+        using TimePoint = std::chrono::time_point<Clock, RealDuration>;
+        const TimePoint desired_time_point = TimePoint(std::chrono::duration_cast<RealDuration>(time_point.time_since_epoch()));
+
         // Clock already set
         // Duration already set.
 
@@ -285,7 +289,7 @@ namespace Todo
         //TODO: implement deferred thingy ???
 
         // Busy wait loop to be as close to the time_point as possible while being able to early exit
-        while (Clock::now() < time_point && !m_Ready.test(std::memory_order_relaxed))
+        while (Todo::ClockNow<Clock, RealDuration>() < desired_time_point && !m_Ready.test(std::memory_order_relaxed))
         {
             std::this_thread::yield();
         }
@@ -469,25 +473,27 @@ namespace Todo
     template <typename Rep, typename Period>
     std::future_status Result<void>::wait_for(const std::chrono::duration<Rep, Period>& duration)
     {
-        using Duration = std::chrono::duration<Rep, Period>;
-        using HRClock = std::chrono::high_resolution_clock;
-        using TimePoint = std::chrono::time_point<HRClock, Duration>;
+        using Duration = std::chrono::duration<uint64_t, std::nano>;
+        using Clock = std::chrono::steady_clock; // Recommended by the standard
+        using TimePoint = std::chrono::time_point<Clock, Duration>;
         if (m_Ready.test(std::memory_order_acquire))
         {
             return std::future_status::ready;
         }
 
         //TODO: implement deferred thingy ???
+
+        // Only doing the yielding and busy waiting if there is any duration at all.
         if (duration > duration.zero())
         {
             // Busy wait loop to be as close to the duration as possible while being able to early exit
-            const TimePoint start = HRClock::now();
+            const TimePoint start = Todo::ClockNow<Clock, Duration>();
             const TimePoint end = start + duration;
             do
             {
                 std::this_thread::yield();
             }
-            while (HRClock::now() < end && !m_Ready.test(std::memory_order_relaxed));
+            while (Todo::ClockNow<Clock, Duration>() < end && !m_Ready.test(std::memory_order_relaxed));
 
             if (m_Ready.test(std::memory_order_acquire))
             {
@@ -501,7 +507,10 @@ namespace Todo
     template <StdClock Clock, typename Duration>
     std::future_status Result<void>::wait_until(const std::chrono::time_point<Clock, Duration>& time_point)
     {
-        using TimePoint = std::chrono::time_point<Clock, Duration>;
+        using RealDuration = std::chrono::duration<uint64_t, std::nano>;
+        using TimePoint = std::chrono::time_point<Clock, RealDuration>;
+        const TimePoint desired_time_point = TimePoint(std::chrono::duration_cast<RealDuration>(time_point.time_since_epoch()));
+
         // Clock already set
         // Duration already set.
 
@@ -513,7 +522,7 @@ namespace Todo
         //TODO: implement deferred thingy ???
 
         // Busy wait loop to be as close to the time_point as possible while being able to early exit
-        while (Clock::now() < time_point && !m_Ready.test(std::memory_order_relaxed))
+        while (Todo::ClockNow<Clock, RealDuration>() < desired_time_point && !m_Ready.test(std::memory_order_relaxed))
         {
             std::this_thread::yield();
         }

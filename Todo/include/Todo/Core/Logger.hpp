@@ -16,8 +16,8 @@ namespace Todo
 		Error,
 	};
 
-	using Clock = std::chrono::system_clock;
-	using LogFuncPtr = void (*/*variable_name*/)(std::source_location, Clock::time_point, LogType, std::string);
+	using StdSystemClock = std::chrono::system_clock;
+	using LogFuncPtr = void (*/*variable_name*/)(std::source_location, StdSystemClock::time_point, LogType, std::string);
 
 	class Logger
 	{
@@ -26,12 +26,12 @@ namespace Todo
 		static void ResetLogger() { SetupLogger(nullptr); }
 		static bool HasLogger();
 		static bool HasCustomLogger();
-		static void Log	(LogType logType, std::string_view message, std::source_location source = std::source_location::current(), Clock::time_point timelog = Clock::now());
+		static void Log	(LogType logType, std::string_view message, std::source_location source = std::source_location::current(), StdSystemClock::time_point timelog = StdSystemClock::now());
 
-		static void Trace	(std::string_view message, 	std::source_location source = std::source_location::current(), Clock::time_point timelog = Clock::now()) { Log(LogType::Trace,		message, source, timelog); }
-		static void Info	(std::string_view message, 	std::source_location source = std::source_location::current(), Clock::time_point timelog = Clock::now()) { Log(LogType::Info,		message, source, timelog); }
-		static void Warning	(std::string_view message, 	std::source_location source = std::source_location::current(), Clock::time_point timelog = Clock::now()) { Log(LogType::Warning,	message, source, timelog); }
-		static void Error	(std::string_view message, 	std::source_location source = std::source_location::current(), Clock::time_point timelog = Clock::now()) { Log(LogType::Error,		message, source, timelog); }
+		static void Trace	(std::string_view message, 	std::source_location source = std::source_location::current(), StdSystemClock::time_point timelog = StdSystemClock::now()) { Log(LogType::Trace,	message, source, timelog); }
+		static void Info	(std::string_view message, 	std::source_location source = std::source_location::current(), StdSystemClock::time_point timelog = StdSystemClock::now()) { Log(LogType::Info,		message, source, timelog); }
+		static void Warning	(std::string_view message, 	std::source_location source = std::source_location::current(), StdSystemClock::time_point timelog = StdSystemClock::now()) { Log(LogType::Warning,	message, source, timelog); }
+		static void Error	(std::string_view message, 	std::source_location source = std::source_location::current(), StdSystemClock::time_point timelog = StdSystemClock::now()) { Log(LogType::Error,	message, source, timelog); }
 	};
 }
 

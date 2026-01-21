@@ -45,6 +45,11 @@ namespace Todo {
 	template<typename F, typename ... Args>
 	concept MovableVoidInvocable = MovableInvocable<F, void>;
 
+	template<typename T>
+	concept LessThanComparable = requires(T a, T b) {
+		{a < b} -> std::convertible_to<bool>;
+	};
+
 	template<typename F>
 	concept VoidInvocable = std::invocable<F,void>;
 

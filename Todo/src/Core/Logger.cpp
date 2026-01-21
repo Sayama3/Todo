@@ -139,7 +139,7 @@ namespace Todo {
 #endif
 #endif
 
-	void Logger::Log(LogType logType, std::string_view message, std::source_location source, Clock::time_point timelog)
+	void Logger::Log(LogType logType, std::string_view message, std::source_location source, StdSystemClock::time_point timelog)
 	{
 
 #ifndef TODO_DISABLE_LOG
