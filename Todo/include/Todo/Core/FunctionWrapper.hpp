@@ -18,7 +18,7 @@ namespace Todo
             virtual ~impl_base() = default;
         };
 
-        template<MovableVoidInvocable F>
+        template<MovableInvocable F>
         struct impl_type : public impl_base
         {
             inline impl_type(F&& f) : func(std::move(f)) {}
@@ -41,7 +41,7 @@ namespace Todo
             std::swap(impl, o.impl);
         }
 
-        template<MovableVoidInvocable F>
+        template<MovableInvocable F>
         FunctionWrapper(F&& f) : impl(new impl_type<F>(std::forward<F>(f))) {}
 
     public:

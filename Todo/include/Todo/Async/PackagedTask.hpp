@@ -61,13 +61,13 @@ namespace Todo
     template <class ReturnType, class ... ArgTypes>
     PackagedTask<ReturnType(ArgTypes...)>::PackagedTask(PackagedTask&& rhs) noexcept
     {
-        swap(this);
+        swap(rhs);
     }
 
     template <class ReturnType, class ... ArgTypes>
     PackagedTask<ReturnType(ArgTypes...)>& PackagedTask<ReturnType(ArgTypes...)>::operator=(PackagedTask&& rhs) noexcept
     {
-        swap(this);
+        swap(rhs);
         return *this;
     }
 

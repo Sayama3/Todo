@@ -115,7 +115,7 @@ namespace Todo
         ResultType err_res{
             ValueType::V_Error,
             {
-                new std::exception_ptr(exception)
+                .error = new std::exception_ptr(exception)
             }
         };
 
@@ -136,20 +136,20 @@ namespace Todo
     template <typename T>
     const T* Result<T>::get_ref()
     {
-        ResultType ResultType = m_Result.load(std::memory_order_acquire);
-        if (!ResultType.type || !ResultType.value)
+        ResultType resultType = m_Result.load(std::memory_order_acquire);
+        if (!resultType.type || !resultType.value)
         {
             throw std::runtime_error("Value not set.");
         }
 
-        switch (ResultType.type)
+        switch (resultType.type)
         {
         case V_Value:
-            return ResultType.value;
+            return resultType.value;
             break;
         case V_Error:
-            if (*ResultType.error)
-                std::rethrow_exception(*ResultType.error);
+            if (*resultType.error)
+                std::rethrow_exception(*resultType.error);
             break;
         default:
             break;
@@ -260,7 +260,7 @@ namespace Todo
     template <typename T>
     void Result<T>::set(T* data)
     {
-        ResultType resultType{V_Value, data};
+        ResultType resultType{V_Value, {.value = data}};
         ResultType current{};
 
         if (!m_Result.compare_exchange_strong(current, resultType, std::memory_order_relaxed, std::memory_order_relaxed))

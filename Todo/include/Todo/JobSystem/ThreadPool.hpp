@@ -27,7 +27,7 @@ namespace Todo
         void worker_thread();
 
     public:
-        template <typename Func>
+        template <std::invocable Func>
         Future<std::invoke_result_t<Func>> Submit(Func f)
         {
             typedef typename std::invoke_result_t<Func> result_type;
@@ -37,7 +37,7 @@ namespace Todo
                 PackagedTask<void()> task(std::move(f));
                 Future<void> future = task.get_future();
                 m_WorkQueue.push(std::move(task));
-                return task;
+                return future;
             }
             else
             {

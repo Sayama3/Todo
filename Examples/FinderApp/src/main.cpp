@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	{
 		Todo::ThreadPool thread_pool;
 
-		auto f = thread_pool.Submit([](){});
+		auto f = thread_pool.Submit([](){return 1;});
 	}
 
 	return 0;
