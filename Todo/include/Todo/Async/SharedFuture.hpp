@@ -25,6 +25,13 @@ namespace Todo {
 		[[nodiscard]] bool is_ready() const;
 		[[nodiscard]] bool is_valid() const;
 		void wait() const;
+
+		template <typename Rep, typename Period>
+		std::future_status wait_for(const std::chrono::duration<Rep, Period>& duration) const;
+
+		template <typename Clock, typename Duration>
+		std::future_status wait_until(const std::chrono::time_point<Clock, Duration>& time_point) const;
+
 		[[nodiscard]] const T& get() const;
 
 	private:
@@ -81,6 +88,22 @@ namespace Todo {
 	}
 
 	template <typename T>
+	template <typename Rep, typename Period>
+	std::future_status SharedFuture<T>::wait_for(const std::chrono::duration<Rep, Period>& duration) const
+	{
+		if (!m_Result) { throw std::future_error(std::future_errc::no_state); }
+		return m_Result->wait_for(duration);
+	}
+
+	template <typename T>
+	template <typename Clock, typename Duration>
+	std::future_status SharedFuture<T>::wait_until(const std::chrono::time_point<Clock, Duration>& time_point) const
+	{
+		if (!m_Result) { throw std::future_error(std::future_errc::no_state); }
+		return m_Result->wait_until(time_point);
+	}
+
+	template <typename T>
 	const T& SharedFuture<T>::get() const
 	{
 		if (!m_Result->is_valid())
@@ -118,6 +141,21 @@ namespace Todo {
 		[[nodiscard]] bool is_ready() const;
 		[[nodiscard]] bool is_valid() const;
 		void wait() const;
+
+		template <typename Rep, typename Period>
+		inline std::future_status wait_for(const std::chrono::duration<Rep, Period>& duration) const
+		{
+			if (!m_Result) { throw std::future_error(std::future_errc::no_state); }
+			return m_Result->wait_for(duration);
+		}
+
+		template <typename Clock, typename Duration>
+		inline std::future_status wait_until(const std::chrono::time_point<Clock, Duration>& time_point) const
+		{
+			if (!m_Result) { throw std::future_error(std::future_errc::no_state); }
+			return m_Result->wait_until(time_point);
+		}
+
 		void get() const;
 
 	private:
