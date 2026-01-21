@@ -123,7 +123,7 @@ namespace Todo
         if (!m_Result.compare_exchange_strong(expected, err_res, std::memory_order_relaxed, std::memory_order_relaxed))
         {
             delete err_res.error;
-            throw std::runtime_error("value already set.");
+            throw std::future_error(std::future_errc::promise_already_satisfied);
         }
         else
         {
@@ -136,7 +136,18 @@ namespace Todo
     template <typename T>
     const T* Result<T>::get_ref()
     {
-        ResultType resultType = m_Result.load(std::memory_order_acquire);
+        if (!m_Ready.test(std::memory_order_acquire))
+        {
+            return nullptr;
+        }
+
+        if (m_NotValid.test(std::memory_order_acquire))
+        {
+            // if true, another thread already set the ResultType to invalid.
+            return nullptr;
+        }
+
+        ResultType resultType = m_Result.load(std::memory_order_relaxed);
         if (!resultType.type || !resultType.value)
         {
             throw std::runtime_error("Value not set.");
@@ -154,6 +165,7 @@ namespace Todo
         default:
             break;
         }
+
         TODO_ERR("Value not set.");
         return nullptr;
     }
@@ -161,21 +173,18 @@ namespace Todo
     template <typename T>
     std::optional<T> Result<T>::get()
     {
-        ResultType null_result{};
-        ResultType current = m_Result.load(std::memory_order_relaxed);
-        while (m_Result.compare_exchange_weak(current, null_result, std::memory_order_acquire,
-                                               std::memory_order_relaxed));
-        if (m_NotValid.test_and_set(std::memory_order_release))
+        if (!m_Ready.test(std::memory_order_acquire))
         {
-            if (current.value != V_None)
-            {
-                // Ayo, not supposed to get there... I get we will get a
-                throw std::runtime_error("The ResultType is not NONE even though the structure is in invalid mode.");
-            }
+            return std::nullopt;
+        }
 
+        if (m_NotValid.test_and_set(std::memory_order_acq_rel))
+        {
             // if true, another thread already set the ResultType to invalid.
             return std::nullopt;
         }
+
+        const ResultType current = m_Result.exchange(ResultType{}, std::memory_order_relaxed);
 
         if (current.type != V_None)
         {
@@ -183,10 +192,10 @@ namespace Todo
             {
             case V_Value:
                 {
-                    T value = std::move(*current->value);
+                    T value = std::move(*current.value);
                     {
                         Alloc alloc;
-                        std::destroy_at(current->value);
+                        std::destroy_at(current.value);
                         alloc.deallocate(current.value, 1);
                     }
                     return std::move(value);
@@ -203,6 +212,7 @@ namespace Todo
                 break;
             }
         }
+
         TODO_ERR("No value in ResultType.");
         return std::nullopt;
     }

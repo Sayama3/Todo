@@ -32,7 +32,7 @@ namespace Todo
     public:
         [[nodiscard]] bool valid() const noexcept;
         [[nodiscard]] Future<ReturnType> get_future();
-        void operator()(ArgTypes... args);
+        void operator()(ArgTypes&&... args);
         void reset();
     private:
         FunctionType m_Function;
@@ -91,7 +91,7 @@ namespace Todo
     }
 
     template <class ReturnType, class ... ArgTypes>
-    void PackagedTask<ReturnType(ArgTypes...)>::operator()(ArgTypes... args)
+    void PackagedTask<ReturnType(ArgTypes...)>::operator()(ArgTypes&&... args)
     {
         if (m_Promise.is_ready())
         {

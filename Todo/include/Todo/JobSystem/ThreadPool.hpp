@@ -31,21 +31,10 @@ namespace Todo
         Future<std::invoke_result_t<Func>> Submit(Func f)
         {
             typedef typename std::invoke_result_t<Func> result_type;
-
-            if constexpr (std::is_same_v<result_type, void>)
-            {
-                PackagedTask<void()> task(std::move(f));
-                Future<void> future = task.get_future();
-                m_WorkQueue.push(std::move(task));
-                return future;
-            }
-            else
-            {
-                PackagedTask<result_type()> task(std::move(f));
-                Future<result_type> future = task.get_future();
-                m_WorkQueue.push(std::move(task));
-                return future;
-            }
+            PackagedTask<result_type()> task(std::move(f));
+            Future<result_type> future = task.get_future();
+            m_WorkQueue.push(std::move(task));
+            return future;
         }
     private:
         std::atomic_bool m_Done{false};
