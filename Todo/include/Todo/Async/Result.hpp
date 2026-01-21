@@ -63,7 +63,7 @@ namespace Todo
         template <typename Rep, typename Period>
         std::future_status wait_for(const std::chrono::duration<Rep, Period>& duration);
 
-        template <typename Clock, typename Duration>
+        template <StdClock Clock, typename Duration>
         std::future_status wait_until(const std::chrono::time_point<Clock, Duration>& time_point);
 
         [[nodiscard]] const T* wait_and_get_ref();
@@ -238,6 +238,9 @@ namespace Todo
     template <typename Rep, typename Period>
     std::future_status Result<T>::wait_for(const std::chrono::duration<Rep, Period>& duration)
     {
+        using Duration = std::chrono::duration<Rep, Period>;
+        using HRClock = std::chrono::high_resolution_clock;
+        using TimePoint = std::chrono::time_point<HRClock, Duration>;
         if (m_Ready.test(std::memory_order_acquire))
         {
             return std::future_status::ready;
@@ -245,10 +248,18 @@ namespace Todo
 
         //TODO: implement deferred thingy ???
 
+        // Only doing the yielding and busy waiting if there is any duration at all.
         if (duration > duration.zero())
         {
-            // I don't have a better way for now so it should be sufficient as I don't use this part often.
-            std::this_thread::sleep_for(duration);
+            // Busy wait loop to be as close to the duration as possible while being able to early exit
+            const TimePoint start = HRClock::now();
+            const TimePoint end = start + duration;
+            do
+            {
+                std::this_thread::yield();
+            }
+            while (HRClock::now() < end && !m_Ready.test(std::memory_order_relaxed));
+
             if (m_Ready.test(std::memory_order_acquire))
             {
                 return std::future_status::ready;
@@ -259,9 +270,13 @@ namespace Todo
     }
 
     template <typename T>
-    template <typename Clock, typename Duration>
+    template <StdClock Clock, typename Duration>
     std::future_status Result<T>::wait_until(const std::chrono::time_point<Clock, Duration>& time_point)
     {
+        using TimePoint = std::chrono::time_point<Clock, Duration>;
+        // Clock already set
+        // Duration already set.
+
         if (m_Ready.test(std::memory_order_acquire))
         {
             return std::future_status::ready;
@@ -269,13 +284,15 @@ namespace Todo
 
         //TODO: implement deferred thingy ???
 
+        // Busy wait loop to be as close to the time_point as possible while being able to early exit
+        while (Clock::now() < time_point && !m_Ready.test(std::memory_order_relaxed))
         {
-            // I don't have a better way for now so it should be sufficient as I don't use this part often.
-            std::this_thread::sleep_until(time_point);
-            if (m_Ready.test(std::memory_order_acquire))
-            {
-                return std::future_status::ready;
-            }
+            std::this_thread::yield();
+        }
+
+        if (m_Ready.test(std::memory_order_acquire))
+        {
+            return std::future_status::ready;
         }
 
         return std::future_status::timeout;
@@ -422,7 +439,7 @@ namespace Todo
         template <typename Rep, typename Period>
         std::future_status wait_for(const std::chrono::duration<Rep, Period>& duration);
 
-        template <typename Clock, typename Duration>
+        template <StdClock Clock, typename Duration>
         std::future_status wait_until(const std::chrono::time_point<Clock, Duration>& time_point);
 
         void wait_and_get_ref();
@@ -452,17 +469,26 @@ namespace Todo
     template <typename Rep, typename Period>
     std::future_status Result<void>::wait_for(const std::chrono::duration<Rep, Period>& duration)
     {
+        using Duration = std::chrono::duration<Rep, Period>;
+        using HRClock = std::chrono::high_resolution_clock;
+        using TimePoint = std::chrono::time_point<HRClock, Duration>;
         if (m_Ready.test(std::memory_order_acquire))
         {
             return std::future_status::ready;
         }
 
         //TODO: implement deferred thingy ???
-
         if (duration > duration.zero())
         {
-            // I don't have a better way for now so it should be sufficient as I don't use this part often.
-            std::this_thread::sleep_for(duration);
+            // Busy wait loop to be as close to the duration as possible while being able to early exit
+            const TimePoint start = HRClock::now();
+            const TimePoint end = start + duration;
+            do
+            {
+                std::this_thread::yield();
+            }
+            while (HRClock::now() < end && !m_Ready.test(std::memory_order_relaxed));
+
             if (m_Ready.test(std::memory_order_acquire))
             {
                 return std::future_status::ready;
@@ -472,9 +498,13 @@ namespace Todo
         return std::future_status::timeout;
     }
 
-    template <typename Clock, typename Duration>
+    template <StdClock Clock, typename Duration>
     std::future_status Result<void>::wait_until(const std::chrono::time_point<Clock, Duration>& time_point)
     {
+        using TimePoint = std::chrono::time_point<Clock, Duration>;
+        // Clock already set
+        // Duration already set.
+
         if (m_Ready.test(std::memory_order_acquire))
         {
             return std::future_status::ready;
@@ -482,13 +512,15 @@ namespace Todo
 
         //TODO: implement deferred thingy ???
 
+        // Busy wait loop to be as close to the time_point as possible while being able to early exit
+        while (Clock::now() < time_point && !m_Ready.test(std::memory_order_relaxed))
         {
-            // I don't have a better way for now so it should be sufficient as I don't use this part often.
-            std::this_thread::sleep_until(time_point);
-            if (m_Ready.test(std::memory_order_acquire))
-            {
-                return std::future_status::ready;
-            }
+            std::this_thread::yield();
+        }
+
+        if (m_Ready.test(std::memory_order_acquire))
+        {
+            return std::future_status::ready;
         }
 
         return std::future_status::timeout;

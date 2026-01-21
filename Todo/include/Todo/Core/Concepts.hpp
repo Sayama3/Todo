@@ -36,6 +36,8 @@ namespace Todo {
 	template <typename HashFunc, typename T>
 	concept HashFor = std::regular_invocable<HashFunc, T> && std::convertible_to<std::invoke_result_t<HashFunc, T>, size_t>;
 
+	template<typename C>
+	concept StdClock = std::chrono::is_clock_v<C>;
 
 	template<typename F, typename ... Args>
 	concept MovableInvocable = std::move_constructible<F> && std::invocable<F, Args...>;
