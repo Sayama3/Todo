@@ -25,8 +25,8 @@ namespace Todo {
 		SpinlockMutex(const SpinlockMutex&) = delete;
 		SpinlockMutex& operator=(const SpinlockMutex&) = delete;
 	public:
-		void lock();
-		void unlock();
+		void lock() noexcept;
+		void unlock() noexcept;
 		bool try_lock() noexcept;
 	public:
 		[[maybe_unused]] [[nodiscard]] Lockguard<SpinlockMutex> Guard();

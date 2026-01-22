@@ -25,9 +25,9 @@ namespace Todo
     // Some better alternative exist, find & replace the core implementation with a better & more performant one.
 
     /// A queue meant to be used in parallel where a single queue can push and pop at the top of the queue and the
-    /// rest of the thread can steal data at the bottom of it.
+    /// rest of the threads can steal data at the bottom of it.
     /// @tparam T Type of the data in the queue.
-    template<std::copyable T, CMutex Mut = std::mutex>
+    template<std::movable T, CMutex Mut = std::mutex>
     class WorkStealQueue
     {
     public:
@@ -46,21 +46,21 @@ namespace Todo
         mutable TMutex<Mut> m_Mutex;
     };
 
-    template <std::copyable T, CMutex Mut>
+    template <std::movable T, CMutex Mut>
     void WorkStealQueue<T, Mut>::push(T data)
     {
         auto lock = m_Mutex.UniqueGuard();
         m_Queue.push_front(std::move(data));
     }
 
-    template <std::copyable T, CMutex Mut>
+    template <std::movable T, CMutex Mut>
     bool WorkStealQueue<T, Mut>::empty() const
     {
         auto lock = m_Mutex.UniqueGuard();
         return m_Queue.empty();
     }
 
-    template <std::copyable T, CMutex Mut>
+    template <std::movable T, CMutex Mut>
     bool WorkStealQueue<T, Mut>::try_pop(T& data)
     {
         auto lock = m_Mutex.UniqueGuard();
@@ -73,7 +73,7 @@ namespace Todo
         return true;
     }
 
-    template <std::copyable T, CMutex Mut>
+    template <std::movable T, CMutex Mut>
     bool WorkStealQueue<T, Mut>::try_steal(T& data)
     {
         auto lock = m_Mutex.UniqueGuard();

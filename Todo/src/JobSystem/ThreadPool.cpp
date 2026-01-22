@@ -18,30 +18,25 @@
 
 namespace Todo
 {
-    ThreadPool::ThreadPool() : m_Done(false)
+    ThreadPool::ThreadPool() : ThreadPool(std::thread::hardware_concurrency())
     {
-        uint32_t const thread_count = std::thread::hardware_concurrency();
-        try
-        {
-            for (uint32_t i = 0; i < thread_count; ++i)
-            {
-                m_Threads.emplace_back(&ThreadPool::worker_thread, this);
-            }
-        }
-        catch (...)
-        {
-            m_Done.store(true, std::memory_order_seq_cst);
-            throw;
-        }
     }
 
     ThreadPool::ThreadPool(const uint32_t thread_count) : m_Done(false)
     {
         try
         {
+            m_Queues.reserve(thread_count);
+            m_Threads.reserve(thread_count);
+
             for (uint32_t i = 0; i < thread_count; ++i)
             {
-                m_Threads.emplace_back(&ThreadPool::worker_thread, this);
+                m_Queues.push_back(std::make_unique<work_steal_queue>());
+            }
+
+            for (uint32_t i = 0; i < thread_count; ++i)
+            {
+                m_Threads.emplace_back(&ThreadPool::worker_thread, this, i);
             }
         }
         catch (...)
@@ -56,9 +51,10 @@ namespace Todo
         m_Done.store(true);
     }
 
-    void ThreadPool::worker_thread()
+    void ThreadPool::worker_thread(const uint32_t id)
     {
-        local_work_queue = std::make_unique<local_queue_type>();
+        l_Index = id;
+        l_LocalWorkQueue = m_Queues[l_Index].get();
 
         while (!m_Done.load(std::memory_order_relaxed))
         {
@@ -69,13 +65,15 @@ namespace Todo
     void ThreadPool::run_pending_task()
     {
         Task task;
-        if (local_work_queue && !local_work_queue->empty())
+        if (pop_task_from_local_queue(task))
         {
-            task = std::move(local_work_queue->front());
-            local_work_queue->pop();
             task();
         }
-        else if (m_WorkQueue.try_pop(task))
+        else if (pop_task_from_pool_queue(task))
+        {
+            task();
+        }
+        else if (pop_task_from_other_thread_queue(task))
         {
             task();
         }
@@ -83,5 +81,32 @@ namespace Todo
         {
             std::this_thread::yield();
         }
+    }
+
+    bool ThreadPool::pop_task_from_local_queue(Task& task)
+    {
+        if (l_LocalWorkQueue)
+        {
+            return l_LocalWorkQueue->try_pop(task);
+        }
+        return false;
+    }
+
+    bool ThreadPool::pop_task_from_pool_queue(Task& task)
+    {
+        return m_WorkQueue.try_pop(task);
+    }
+
+    bool ThreadPool::pop_task_from_other_thread_queue(Task& task)
+    {
+        for (uint32_t i = 0; i < m_Queues.size(); ++i)
+        {
+            const uint32_t index = (l_Index + i) % m_Queues.size();
+            if (m_Queues[index] && m_Queues[index]->try_steal(task))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

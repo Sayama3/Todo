@@ -53,6 +53,7 @@ namespace Todo {
 		bool unguard_empty() const;
 		std::unique_ptr<Node> pop_head();
 		Node* get_tail();
+		const Node* get_tail() const ;
 		UniqueLockguard<Mutex> wait_for_data();
 		std::unique_ptr<Node> wait_pop_head();
 		std::unique_ptr<Node> wait_pop_head(T& value);
@@ -116,6 +117,12 @@ namespace Todo {
 
 	template<typename T, typename Mut>
 	ThreadsafeQueue<T,Mut>::Node *ThreadsafeQueue<T, Mut>::get_tail() {
+		auto lock_guard = m_TailMutex.Guard();
+		return m_Tail;
+	}
+
+	template<typename T, typename Mut>
+	const ThreadsafeQueue<T,Mut>::Node* ThreadsafeQueue<T, Mut>::get_tail() const {
 		auto lock_guard = m_TailMutex.Guard();
 		return m_Tail;
 	}

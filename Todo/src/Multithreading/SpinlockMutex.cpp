@@ -19,11 +19,11 @@ namespace Todo {
 
 	SpinlockMutex::~SpinlockMutex() = default;
 
-	void SpinlockMutex::lock() {
-		while (m_Flag.test_and_set(std::memory_order_acquire));
+	void SpinlockMutex::lock() noexcept {
+		while (m_Flag.test_and_set(std::memory_order_acquire)) {}
 	}
 
-	void SpinlockMutex::unlock() {
+	void SpinlockMutex::unlock() noexcept {
 		m_Flag.clear(std::memory_order_release);
 	}
 

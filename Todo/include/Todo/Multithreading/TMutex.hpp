@@ -44,8 +44,8 @@ namespace Todo
 		Mut& get() {return m_Mutex;}
 		const Mut& get() const {return m_Mutex;}
 	public:
-		[[maybe_unused]] [[nodiscard]] Lockguard<TMutex<Mut>> Guard() { return {this}; }
-		[[maybe_unused]] [[nodiscard]] UniqueLockguard<TMutex<Mut>> UniqueGuard() { return {*this }; }
+		[[maybe_unused]] [[nodiscard]] Lockguard<TMutex<Mut>> Guard() { return Lockguard<TMutex<Mut>>(*this); }
+		[[maybe_unused]] [[nodiscard]] UniqueLockguard<TMutex<Mut>> UniqueGuard() { return UniqueLockguard<TMutex<Mut>>(*this ); }
 	protected:
 		Mut m_Mutex;
 	};

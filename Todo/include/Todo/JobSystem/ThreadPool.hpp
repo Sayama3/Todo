@@ -18,6 +18,7 @@
 #include "Todo/Multithreading/Thread.hpp"
 #include "Todo/Multithreading/ThreadsafeQueue.hpp"
 #include "Todo/Core/FunctionWrapper.hpp"
+#include "Todo/Multithreading/WorkStealQueue.hpp"
 
 namespace Todo
 {
@@ -25,6 +26,7 @@ namespace Todo
     {
     private:
         using Task = FunctionWrapper;
+        using work_steal_queue = WorkStealQueue<Task>;
         using global_queue_type = ThreadsafeQueue<Task>;
         using local_queue_type = std::queue<Task>;
 
@@ -37,8 +39,14 @@ namespace Todo
     public:
 
     private:
-        void worker_thread();
+        void worker_thread(uint32_t index);
         void run_pending_task();
+
+    private:
+        bool pop_task_from_local_queue(Task& task);
+        bool pop_task_from_pool_queue(Task& task);
+        bool pop_task_from_other_thread_queue(Task& task);
+
     public:
         template <std::invocable Func>
         Future<std::invoke_result_t<Func>> Submit(Func f)
@@ -47,9 +55,9 @@ namespace Todo
             PackagedTask<result_type()> task(std::move(f));
             Future<result_type> future = task.get_future();
 
-            if (local_work_queue)
+            if (l_LocalWorkQueue)
             {
-                local_work_queue->push(std::move(task));
+                l_LocalWorkQueue->push(std::move(task));
             }
             else
             {
@@ -60,8 +68,10 @@ namespace Todo
     private:
         std::atomic_bool m_Done{false};
         global_queue_type m_WorkQueue;
-        inline static thread_local std::unique_ptr<local_queue_type> local_work_queue{};
+        std::vector<std::unique_ptr<work_steal_queue>> m_Queues;
         std::vector<Thread> m_Threads;
+        inline static thread_local work_steal_queue* l_LocalWorkQueue{nullptr};
+        inline static thread_local uint32_t l_Index{UINT32_MAX};
     };
 
 }

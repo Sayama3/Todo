@@ -37,9 +37,12 @@ namespace Todo
         };
     public:
         FunctionWrapper() = default;
-        FunctionWrapper(const FunctionWrapper&) = delete;
+        ~FunctionWrapper() = default;
+
         FunctionWrapper(FunctionWrapper&) = delete;
+        FunctionWrapper(const FunctionWrapper&) = delete;
         FunctionWrapper& operator=(const FunctionWrapper&) = delete;
+
         FunctionWrapper(FunctionWrapper&& o) noexcept : impl(std::move(o.impl)) {}
         FunctionWrapper& operator=(FunctionWrapper&& o) noexcept
         {
@@ -67,4 +70,9 @@ namespace Todo
     private:
         std::unique_ptr<impl_base> impl;
     };
+
+    static_assert(std::is_move_assignable_v<FunctionWrapper>);
+    static_assert(std::is_move_constructible_v<FunctionWrapper>);
+    static_assert(std::is_swappable_v<FunctionWrapper>);
+
 }
