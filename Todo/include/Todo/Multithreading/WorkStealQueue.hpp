@@ -15,19 +15,17 @@
 #pragma once
 
 #include "Todo/Core/Concepts.hpp"
-#include "Todo/Multithreading/Mutex.hpp"
-#include "Todo/Multithreading/TMutex.hpp"
+#include "Todo/ThirdParty/wsq.hpp"
 
 namespace Todo
 {
-
     // This is a naive implementation of the Work Steal Queue.
     // Some better alternative exist, find & replace the core implementation with a better & more performant one.
 
     /// A queue meant to be used in parallel where a single queue can push and pop at the top of the queue and the
     /// rest of the threads can steal data at the bottom of it.
     /// @tparam T Type of the data in the queue.
-    template<std::movable T, CMutex Mut = std::mutex>
+    template <std::movable T>
     class WorkStealQueue
     {
     public:
@@ -36,53 +34,62 @@ namespace Todo
         WorkStealQueue(WorkStealQueue&) = delete;
         WorkStealQueue(const WorkStealQueue&) = delete;
         WorkStealQueue& operator=(const WorkStealQueue&) = delete;
+
     public:
         void push(T data);
-        bool empty() const;
+        [[nodiscard]] bool empty() const;
         bool try_pop(T& data);
         bool try_steal(T& data);
+        std::optional<T> pop();
+        std::optional<T> steal();
+
     private:
-        std::deque<T> m_Queue;
-        mutable TMutex<Mut> m_Mutex;
+        wsq::WorkStealingQueue<T> m_InternQueue;
     };
 
-    template <std::movable T, CMutex Mut>
-    void WorkStealQueue<T, Mut>::push(T data)
+    template <std::movable T>
+    void WorkStealQueue<T>::push(T data)
     {
-        auto lock = m_Mutex.UniqueGuard();
-        m_Queue.push_front(std::move(data));
+        m_InternQueue.push(std::move(data));
     }
 
-    template <std::movable T, CMutex Mut>
-    bool WorkStealQueue<T, Mut>::empty() const
+    template <std::movable T>
+    bool WorkStealQueue<T>::empty() const
     {
-        auto lock = m_Mutex.UniqueGuard();
-        return m_Queue.empty();
+        return m_InternQueue.empty();
     }
 
-    template <std::movable T, CMutex Mut>
-    bool WorkStealQueue<T, Mut>::try_pop(T& data)
+    template <std::movable T>
+    bool WorkStealQueue<T>::try_pop(T& data)
     {
-        auto lock = m_Mutex.UniqueGuard();
-        if (m_Queue.empty())
+        if (auto result = m_InternQueue.pop())
         {
-            return false;
+            data = std::move(result.value());
+            return true;
         }
-        data = std::move(m_Queue.front());
-        m_Queue.pop_front();
-        return true;
+        return false;
     }
 
-    template <std::movable T, CMutex Mut>
-    bool WorkStealQueue<T, Mut>::try_steal(T& data)
+    template <std::movable T>
+    bool WorkStealQueue<T>::try_steal(T& data)
     {
-        auto lock = m_Mutex.UniqueGuard();
-        if (m_Queue.empty())
+        if (auto result = m_InternQueue.steal())
         {
-            return false;
+            data = std::move(result.value());
+            return true;
         }
-        data = std::move(m_Queue.back());
-        m_Queue.pop_back();
-        return true;
+        return false;
+    }
+
+    template <std::movable T>
+    std::optional<T> WorkStealQueue<T>::pop()
+    {
+        return m_InternQueue.pop();
+    }
+
+    template <std::movable T>
+    std::optional<T> WorkStealQueue<T>::steal()
+    {
+        return m_InternQueue.steal();
     }
 }
