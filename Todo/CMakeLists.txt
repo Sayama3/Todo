@@ -45,6 +45,7 @@ set(TODO_SRC
 		src/Async/SharedFuture.cpp
 		src/Async/Promise.cpp
 		src/Async/Result.cpp
+		include/Todo/Multithreading/WorkStealQueue.hpp
 )
 
 if(TODO_STATIC)
