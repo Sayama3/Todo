@@ -16,18 +16,16 @@ using TimePoint = std::chrono::time_point<Clock, Duration>;
 
 static inline int rand(int seed)
 {
-	constexpr int a = 1103515245;
-	constexpr int c = 12345;
-	constexpr int m = 2147483648;//2e31;
-	seed = (a * seed + c) % m;
+	const uint64_t s = seed;
+	constexpr uint64_t a = 1103515245;
+	constexpr uint64_t c = 12345;
+	constexpr uint64_t m = INT_MAX + 1ull;
+	seed = static_cast<int>((a * s + c) % m);
 	return seed;
 }
 
 int main(int argc, char* argv[])
 {
-	// TimePoint p = std::chrono::time_point_cast<TimePoint>(Clock::now());
-	// TimePoint p = TimePoint(std::chrono::duration_cast<Duration>(Clock::now().time_since_epoch()));
-
 	{
 		Todo::Promise<uint64_t> promise{};
 		// std::promise<uint64_t> promise{};
@@ -53,12 +51,12 @@ int main(int argc, char* argv[])
 		Todo::ThreadPool thread_pool;
 
 		std::array<Todo::Future<int>, 6> futures;
-		futures[1-1] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 1;});
-		futures[2-1] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 2;});
-		futures[3-1] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 3;});
-		futures[4-1] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 4;});
-		futures[5-1] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 5;});
-		futures[6-1] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 6;});
+		futures[0] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 1;});
+		futures[1] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 2;});
+		futures[2] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 3;});
+		futures[3] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 4;});
+		futures[4] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 5;});
+		futures[5] = thread_pool.Submit([](){auto id = std::this_thread::get_id(); std::this_thread::sleep_for(std::chrono::seconds(rand(*(unsigned int*)&id) % 5u));return 6;});
 
 		uint64_t done = 6;
 		while (done)
