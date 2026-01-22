@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #pragma once
+
 #include "Todo/Async/Future.hpp"
 #include "Todo/Async/PackagedTask.hpp"
 #include "Todo/Multithreading/Thread.hpp"
@@ -57,7 +58,7 @@ namespace Todo
 
             if (l_LocalWorkQueue)
             {
-                l_LocalWorkQueue->push(std::move(task));
+                l_LocalWorkQueue->emplace(std::move(task));
             }
             else
             {

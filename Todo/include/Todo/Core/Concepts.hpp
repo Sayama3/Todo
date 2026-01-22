@@ -62,5 +62,4 @@ namespace Todo {
 
 	template<typename F>
 	concept VoidInvocable = std::invocable<F,void>;
-
 }

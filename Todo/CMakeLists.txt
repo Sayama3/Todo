@@ -143,3 +143,7 @@ target_precompile_headers(Todo PUBLIC
 )
 
 add_library(Todo::Todo ALIAS Todo)
+
+# Find pthread package
+find_package(Threads REQUIRED)
+target_link_libraries(Todo PUBLIC Threads::Threads)

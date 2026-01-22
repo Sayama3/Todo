@@ -54,7 +54,7 @@ namespace Todo
             std::swap(impl, o.impl);
         }
 
-        template<MovableInvocable F>
+        template<typename F>
         FunctionWrapper(F&& f) : impl(new impl_type<F>(std::forward<F>(f))) {}
 
     public:
