@@ -1,3 +1,31 @@
+// MIT License
+//
+// Copyright (c) 2020 T.-W. Huang
+//
+// University of Utah, Salt Lake City, UT, USA
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+// Source: https://github.com/taskflow/work-stealing-queue
+
+// Minor edit to add a namespace around the class.
+
 #pragma once
 
 #include <atomic>
@@ -6,6 +34,9 @@
 #include <cassert>
 #include <new>
 
+namespace wsq
+{
+
 /**
 @class: WorkStealingQueue
 
@@ -13,7 +44,7 @@
 
 @brief Lock-free unbounded single-producer multiple-consumer queue.
 
-This class implements the work stealing queue described in the paper, 
+This class implements the work stealing queue described in the paper,
 "Correct and Efficient Work-Stealing for Weak Memory Models,"
 available at https://www.di.ens.fr/~zappa/readings/ppopp13.pdf.
 
@@ -29,7 +60,7 @@ class WorkStealingQueue {
     int64_t M;
     std::atomic<T>* S;
 
-    explicit Array(int64_t c) : 
+    explicit Array(int64_t c) :
       C {c},
       M {c-1},
       S {new std::atomic<T>[static_cast<size_t>(C)]} {
@@ -42,7 +73,7 @@ class WorkStealingQueue {
     int64_t capacity() const noexcept {
       return C;
     }
-    
+
     template <typename O>
     void push(int64_t i, O&& o) noexcept {
       S[i & M].store(std::forward<O>(o), std::memory_order_relaxed);
@@ -74,7 +105,7 @@ class WorkStealingQueue {
   std::vector<Array*> _garbage;
 
   public:
-    
+
     /**
     @brief constructs the queue with a given capacity
 
@@ -86,12 +117,12 @@ class WorkStealingQueue {
     @brief destructs the queue
     */
     ~WorkStealingQueue();
-    
+
     /**
     @brief queries if the queue is empty at the time of this call
     */
     bool empty() const noexcept;
-    
+
     /**
     @brief queries the number of items at the time of this call
     */
@@ -101,29 +132,29 @@ class WorkStealingQueue {
     @brief queries the capacity of the queue
     */
     int64_t capacity() const noexcept;
-    
+
     /**
     @brief inserts an item to the queue
 
-    Only the owner thread can insert an item to the queue. 
-    The operation can trigger the queue to resize its capacity 
+    Only the owner thread can insert an item to the queue.
+    The operation can trigger the queue to resize its capacity
     if more space is required.
 
-    @tparam O data type 
+    @tparam O data type
 
     @param item the item to perfect-forward to the queue
     */
     template <typename O>
     void push(O&& item);
-    
+
     /**
     @brief pops out an item from the queue
 
-    Only the owner thread can pop out an item from the queue. 
+    Only the owner thread can pop out an item from the queue.
     The return can be a @std_nullopt if this operation failed (empty queue).
     */
     std::optional<T> pop();
-    
+
     /**
     @brief steals an item from the queue
 
@@ -151,7 +182,7 @@ WorkStealingQueue<T>::~WorkStealingQueue() {
   }
   delete _array.load();
 }
-  
+
 // Function: empty
 template <typename T>
 bool WorkStealingQueue<T>::empty() const noexcept {
@@ -204,8 +235,8 @@ std::optional<T> WorkStealingQueue<T>::pop() {
     item = a->pop(b);
     if(t == b) {
       // the last item just got stolen
-      if(!_top.compare_exchange_strong(t, t+1, 
-                                       std::memory_order_seq_cst, 
+      if(!_top.compare_exchange_strong(t, t+1,
+                                       std::memory_order_seq_cst,
                                        std::memory_order_relaxed)) {
         item = std::nullopt;
       }
@@ -225,7 +256,7 @@ std::optional<T> WorkStealingQueue<T>::steal() {
   int64_t t = _top.load(std::memory_order_acquire);
   std::atomic_thread_fence(std::memory_order_seq_cst);
   int64_t b = _bottom.load(std::memory_order_acquire);
-  
+
   std::optional<T> item;
 
   if(t < b) {
@@ -247,3 +278,4 @@ int64_t WorkStealingQueue<T>::capacity() const noexcept {
   return _array.load(std::memory_order_relaxed)->capacity();
 }
 
+}

@@ -43,6 +43,10 @@ not the case, beware.
 
 ## Credits
 
+Usage of the following libraries :
+
+- [Work-Stealing Queue](https://github.com/taskflow/work-stealing-queue) by _T.-W. Huang_
+
 A lot of the code written here has been written thanks to the excellent book
 
     C++ Concurrency in Action (Second Edition) by Anthony Williams
