@@ -37,7 +37,6 @@ namespace Todo
         ~ThreadPool();
         ThreadPool(const ThreadPool&) = delete;
         ThreadPool& operator=(const ThreadPool&) = delete;
-    public:
 
     private:
         void worker_thread(uint32_t index);
@@ -66,6 +65,9 @@ namespace Todo
             }
             return future;
         }
+
+        void Stop();
+
     private:
         std::atomic_bool m_Done{false};
         global_queue_type m_WorkQueue;
@@ -74,5 +76,4 @@ namespace Todo
         inline static thread_local work_steal_queue* l_LocalWorkQueue{nullptr};
         inline static thread_local uint32_t l_Index{UINT32_MAX};
     };
-
 }

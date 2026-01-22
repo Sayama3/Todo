@@ -13,7 +13,6 @@
 // limitations under the License.
 
 
-
 // Modified version of the WorkStealingQueue of T.-W. Huang (cf. https://github.com/taskflow/work-stealing-queue) to support any type of T
 // Lose performance for Trivial type but work for any type.
 // Heavy use over the new/delete, might be worth to investigate the use of a dedicated Allocator.
@@ -30,15 +29,19 @@ namespace Todo
     {
         using type = T;
         using type_ptr = T*;
-    private:
 
+    private:
         // Array structure that can operate on any type of T by stacking them close together and working only with pointer
         // for the atomic operations.
         struct Array
         {
-            explicit Array(const int64_t count) : m_Count(count), m_Max(count - 1), m_Array(new std::atomic<type_ptr>[static_cast<size_t>(count)]) {}
+            explicit Array(const int64_t count) : m_Count(count), m_Max(count - 1),
+                                                  m_Array(new std::atomic<type_ptr>[static_cast<size_t>(count)])
+            {
+            }
 
-            ~Array() {
+            ~Array()
+            {
                 for (int64_t i = 0; i < m_Count; ++i)
                 {
                     T* value = m_Array[i].exchange(nullptr, std::memory_order_seq_cst);
@@ -51,7 +54,8 @@ namespace Todo
                 delete[] m_Array;
             }
 
-            [[nodiscard]] int64_t capacity() const noexcept {
+            [[nodiscard]] int64_t capacity() const noexcept
+            {
                 return m_Count;
             }
 
@@ -93,7 +97,7 @@ namespace Todo
 
             Array* resize(const int64_t bottom, const int64_t top)
             {
-                auto* ptr = new Array{2*m_Count};
+                auto* ptr = new Array{2 * m_Count};
                 for (int64_t i = top; i != bottom; ++i)
                 {
                     ptr->push(i, pop_raw_ptr(i));
@@ -105,6 +109,7 @@ namespace Todo
             int64_t m_Max;
             std::atomic<type_ptr>* m_Array;
         };
+
     public:
         /**
         @brief constructs the queue with a given capacity
@@ -127,8 +132,8 @@ namespace Todo
         [[nodiscard]] size_t size() const noexcept;
         [[nodiscard]] int64_t capacity() const noexcept;
 
-        template<typename ... Args>
-        void emplace(Args&&...args);
+        template <typename... Args>
+        void emplace(Args&&... args);
         void push(T* data) noexcept;
 
         std::optional<T> pop();
@@ -161,7 +166,8 @@ namespace Todo
     template <std::movable T>
     WorkStealQueue<T>::~WorkStealQueue()
     {
-        for(auto a : m_Garbage) {
+        for (auto a : m_Garbage)
+        {
             delete a;
         }
         delete m_Array.load();
@@ -190,7 +196,7 @@ namespace Todo
     }
 
     template <std::movable T>
-    template <typename ... Args>
+    template <typename... Args>
     void WorkStealQueue<T>::emplace(Args&&... args)
     {
         T* data = new T(std::forward<Args>(args)...);
@@ -205,7 +211,8 @@ namespace Todo
         Array* a = m_Array.load(std::memory_order_relaxed);
 
         // queue is full
-        if(a->capacity() - 1 < (b - t)) {
+        if (a->capacity() - 1 < (b - t))
+        {
             Array* tmp = a->resize(b, t);
             m_Garbage.push_back(a);
             std::swap(a, tmp);
@@ -228,19 +235,23 @@ namespace Todo
 
         std::optional<T> item;
 
-        if(t <= b) {
+        if (t <= b)
+        {
             item = a->pop(b);
-            if(t == b) {
+            if (t == b)
+            {
                 // the last item just got stolen
-                if(!m_Top.compare_exchange_strong(t, t+1,
-                                                 std::memory_order_seq_cst,
-                                                 std::memory_order_relaxed)) {
+                if (!m_Top.compare_exchange_strong(t, t + 1,
+                                                   std::memory_order_seq_cst,
+                                                   std::memory_order_relaxed))
+                {
                     item = std::nullopt;
-                                                 }
+                }
                 m_Bottom.store(b + 1, std::memory_order_relaxed);
             }
         }
-        else {
+        else
+        {
             m_Bottom.store(b + 1, std::memory_order_relaxed);
         }
 
@@ -256,14 +267,16 @@ namespace Todo
 
         std::optional<T> item;
 
-        if(t < b) {
+        if (t < b)
+        {
             Array* a = m_Array.load(std::memory_order_consume);
             item = a->pop(t);
-            if(!m_Top.compare_exchange_strong(t, t+1,
-                                             std::memory_order_seq_cst,
-                                             std::memory_order_relaxed)) {
+            if (!m_Top.compare_exchange_strong(t, t + 1,
+                                               std::memory_order_seq_cst,
+                                               std::memory_order_relaxed))
+            {
                 return std::nullopt;
-                                             }
+            }
         }
 
         return item;

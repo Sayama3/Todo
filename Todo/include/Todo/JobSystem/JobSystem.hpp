@@ -14,19 +14,34 @@
 
 #pragma once
 
+#include "ThreadPool.hpp"
 #include "Todo/Multithreading/Thread.hpp"
 
-namespace Todo {
+namespace Todo
+{
+    class JobSystem
+    {
+        struct DedicatedThread
+        {
+            std::function<void()> func;
+            std::unique_ptr<Thread> thread;
+        };
 
-	class JobSystem {
-	public:
-		JobSystem(uint32_t threadCount);
-		~JobSystem();
-	private:
-		void Poll();
-	private:
-		std::atomic<bool> m_Running{false};
-		std::vector<Thread> m_Threads;
-	};
+    public:
+        JobSystem();
+        JobSystem(uint32_t threadCount);
+        ~JobSystem();
 
+    public:
+        JobSystem& AddDedicatedThread(std::function<void()> func, uint32_t& id);
+
+    public:
+        void Run();
+
+    private:
+        inline static uint32_t g_ID{1};
+        uint32_t thread_count{0u};
+        std::unordered_map<uint32_t, DedicatedThread> m_DedicatedThreads;
+        std::unique_ptr<ThreadPool> m_ThreadPool;
+    };
 } // Todo

@@ -109,4 +109,9 @@ namespace Todo
         }
         return false;
     }
+
+    void ThreadPool::Stop()
+    {
+        m_Done.store(true, std::memory_order_relaxed);
+    }
 }

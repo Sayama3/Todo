@@ -15,25 +15,44 @@
 #include "Todo/JobSystem/JobSystem.hpp"
 
 namespace Todo {
-	JobSystem::JobSystem(const uint32_t threadCount)
+	JobSystem::JobSystem() : JobSystem(std::thread::hardware_concurrency())
 	{
-		m_Threads.reserve(threadCount);
-		for (uint32_t i = 0; i < threadCount; ++i)
-		{
-			std::string name = "JobThread " + std::to_string(i);
-			m_Threads.emplace_back(std::move(name), &JobSystem::Poll, this);
-		}
-		m_Running.store(true, std::memory_order_release);
+	}
+
+	JobSystem::JobSystem(const uint32_t threadCount) : thread_count(threadCount)
+	{
 	}
 
 	JobSystem::~JobSystem()
 	{
-		m_Running.store(false, std::memory_order_release);
-		m_Threads.clear();
+		if (m_ThreadPool)
+		{
+			m_ThreadPool->Stop();
+		}
+
+		for (auto& dedicated : m_DedicatedThreads)
+		{
+			dedicated.second.thread->request_stop();
+			dedicated.second.thread->try_join();
+		}
 	}
 
-	void JobSystem::Poll()
+	JobSystem& JobSystem::AddDedicatedThread(std::function<void()> func, uint32_t& id)
 	{
-		//TODO: Poll jobs and execute them
+		id = ++g_ID;
+		m_DedicatedThreads.insert({id, DedicatedThread{func, nullptr}});
+
+		return *this;
+	}
+
+	void JobSystem::Run()
+	{
+		const int64_t remainingThread = static_cast<int64_t>(thread_count) - static_cast<int64_t>(m_DedicatedThreads.size());
+		if (remainingThread <= 0)
+		{
+			const std::string errorMessage = "We are missing at least " + std::to_string((-remainingThread) + 1) + " threads.";
+			throw std::runtime_error(errorMessage);
+		}
+		m_ThreadPool = std::make_unique<ThreadPool>(static_cast<uint32_t>(remainingThread));
 	}
 } // Todo
