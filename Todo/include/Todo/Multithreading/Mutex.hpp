@@ -20,4 +20,5 @@
 
 namespace Todo {
 	using StdMutex = TMutex<std::mutex>;
+	using StdSharedMutex = TMutex<std::shared_mutex>;
 } // Todo
