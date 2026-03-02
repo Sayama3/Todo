@@ -48,10 +48,12 @@ set(TODO_SRC
 		include/Todo/Multithreading/WorkStealQueue.hpp
 )
 
-if(TODO_STATIC)
-	add_library(Todo STATIC ${TODO_SRC})
-else()
+if(TODO_SHARED)
+	message(NOTICE "Building Todo as a SHARED library.")
 	add_library(Todo SHARED ${TODO_SRC})
+else()
+	message(NOTICE "Building Todo as a STATIC library.")
+	add_library(Todo STATIC ${TODO_SRC})
 endif()
 
 target_include_directories(Todo PUBLIC include)

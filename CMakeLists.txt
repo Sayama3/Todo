@@ -16,7 +16,7 @@ option(TODO_DISABLE_LOG			"Disable entirely the logging system." OFF)
 option(TODO_UNICODE				"Enable Unicode support." OFF)
 
 # Compiling options
-option(TODO_STATIC				"Compile the Todo library as a static one. OFF is Shared." ON)
+option(TODO_SHARED				"Compile the Todo library as a static one. OFF is Shared." OFF)
 option(TODO_TESTS				"Add the tests to the project" ON)
 option(TODO_EXAMPLES			"Add the examples executable to the project" ON)
 
