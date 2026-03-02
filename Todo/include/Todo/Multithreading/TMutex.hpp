@@ -61,6 +61,6 @@ namespace Todo
 		void unlock_shared() { TMutex<Mut>::m_Mutex.unlock_shared(); }
 		bool try_lock_shared() noexcept {return TMutex<Mut>::m_Mutex.try_lock_shared();}
 	public:
-		[[maybe_unused]] [[nodiscard]] SharedLockguard<TSharedMutex<Mut>> SharedGuard() { return {*this }; }
+		[[maybe_unused]] [[nodiscard]] SharedLockguard<TSharedMutex<Mut>> SharedGuard() { return SharedLockguard<TSharedMutex<Mut>>{*this }; }
 	};
 }
