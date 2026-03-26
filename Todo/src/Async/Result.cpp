@@ -30,12 +30,7 @@ namespace Todo
 
     void Result<void>::set_exception(const std::exception_ptr& exception)
     {
-        ResultType err_res{
-            ValueType::V_Error,
-            {
-                .error = new std::exception_ptr(exception)
-            }
-        };
+        ResultType err_res{new std::exception_ptr(exception)};
 
         ResultType expected{};
         if (!m_Result.compare_exchange_strong(expected, err_res, std::memory_order_relaxed, std::memory_order_relaxed))
@@ -166,7 +161,7 @@ namespace Todo
 
     void Result<void>::set()
     {
-        ResultType resultType{V_Value, {1}};
+        ResultType resultType{1};
         ResultType current{};
 
         if (!m_Result.compare_exchange_strong(current, resultType, std::memory_order_relaxed,

@@ -40,6 +40,15 @@ namespace Todo
 
         struct ResultType
         {
+            ResultType() noexcept = default;
+            explicit ResultType(ErrPtr pExcept) noexcept : type(V_Error), error(pExcept) {}
+            explicit ResultType(TypePtr pValue) noexcept : type(V_Value), value(pValue) {}
+            ~ResultType() = default;
+            ResultType(const ResultType&) noexcept = default;
+            ResultType& operator=(const ResultType&) noexcept = default;
+            ResultType(ResultType&) noexcept = default;
+            ResultType& operator=(ResultType&) noexcept = default;
+
             ValueType type{};
 
             union
@@ -421,6 +430,15 @@ namespace Todo
 
         struct ResultType
         {
+            ResultType() noexcept = default;
+            explicit ResultType(ErrPtr pExcept) noexcept : type(V_Error), error(pExcept) {}
+            explicit ResultType(TypePtr pValue) noexcept : type(V_Value), value(pValue) {}
+            ~ResultType() = default;
+            ResultType(const ResultType&) noexcept = default;
+            ResultType& operator=(const ResultType&) noexcept = default;
+            ResultType(ResultType&) noexcept = default;
+            ResultType& operator=(ResultType&) noexcept = default;
+
             ValueType type{};
 
             union
