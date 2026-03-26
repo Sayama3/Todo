@@ -20,7 +20,7 @@ namespace Todo {
 	{
 		{ mut.lock() };
 		{ mut.unlock() };
-		{ mut.try_lock() } noexcept -> std::convertible_to<bool>;
+		{ mut.try_lock() } -> std::convertible_to<bool>;
 	};
 
 	template<typename Mut>
@@ -28,7 +28,7 @@ namespace Todo {
 	{
 		{ mut.lock_shared() };
 		{ mut.unlock_shared() };
-		{ mut.try_lock_shared() } noexcept -> std::convertible_to<bool>;
+		{ mut.try_lock_shared() } -> std::convertible_to<bool>;
 	};
 
 	template<typename T>
