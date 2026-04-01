@@ -19,11 +19,11 @@
 #include "Lockguard.hpp"
 
 #ifdef __COUNTER__
-#define TODO_UNIQUE_GUARD(MUTEX) auto TODO_CONCAT(guard,__COUNTER__) = MUTEX.UniqueGuard()
-#define TODO_SHARED_GUARD(SHARED_MUTEX) auto TODO_CONCAT(guard,__COUNTER__) = SHARED_MUTEX.SharedGuard()
+#define TODO_UNIQUE_GUARD(MUTEX) auto TODO_CONCAT(_guard, __COUNTER__) = MUTEX.UniqueGuard()
+#define TODO_SHARED_GUARD(SHARED_MUTEX) auto TODO_CONCAT(_guard, __COUNTER__) = SHARED_MUTEX.SharedGuard()
 #else
-#define TODO_UNIQUE_GUARD(MUTEX) auto TODO_CONCAT(guard,__LINE__) = MUTEX.UniqueGuard()
-#define TODO_SHARED_GUARD(SHARED_MUTEX) auto TODO_CONCAT(guard,__LINE__) = SHARED_MUTEX.SharedGuard()
+#define TODO_UNIQUE_GUARD(MUTEX) auto TODO_CONCAT(_guard, __LINE__) = MUTEX.UniqueGuard()
+#define TODO_SHARED_GUARD(SHARED_MUTEX) auto TODO_CONCAT(_guard, __LINE__) = SHARED_MUTEX.SharedGuard()
 #endif
 
 namespace Todo
