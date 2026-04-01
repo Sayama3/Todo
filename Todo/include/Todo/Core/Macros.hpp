@@ -38,3 +38,6 @@
 		#define TODO_REMAINING_THREAD 0
 	#endif
 #endif
+
+#define TODO_CONCAT_IMPL( x, y ) x##y
+#define TODO_CONCAT( x, y ) TODO_CONCAT_IMPL( x, y )
