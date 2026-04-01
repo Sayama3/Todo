@@ -139,12 +139,7 @@ namespace Todo
     template <typename T>
     void Result<T>::set_exception(const std::exception_ptr& exception)
     {
-        ResultType err_res{
-            ValueType::V_Error,
-            {
-                .error = new std::exception_ptr(exception)
-            }
-        };
+        ResultType err_res{new std::exception_ptr(exception)};
 
         ResultType expected{};
         if (!m_Result.compare_exchange_strong(expected, err_res, std::memory_order_relaxed, std::memory_order_relaxed))
@@ -364,7 +359,7 @@ namespace Todo
     template <typename T>
     void Result<T>::set(T* data)
     {
-        ResultType resultType{V_Value, {.value = data}};
+        ResultType resultType{data};
         ResultType current{};
 
         if (!m_Result.compare_exchange_strong(current, resultType, std::memory_order_relaxed,
